@@ -1,0 +1,139 @@
+---
+title: "Microsoft Procurement"
+subtitle: "SUBTITLE"
+author: 
+  - Deyi Kong
+thanks: "Code and data are available at: [https://github.com/eeeee-cmd/Procurement/](https://github.com/eeeee-cmd/Procurement/)."
+date: today
+date-format: long
+abstract: "This paper analizes the procurement supplier, Microsoft."
+format: pdf
+toc: true
+toc-depth: 3
+number-sections: true
+bibliography: references.bib
+---
+
+```{r}
+#| include: false
+#| warning: false
+#| message: false
+
+# Install Packages if not downloaded:
+required_packages <- c(
+  "tidyverse", "sf", "here", "arrow", "ggplot2", "janitor", "purrr", "knitr", "kableExtra", "ggcorrplot", "modelsummary"
+)
+for (p in required_packages) {
+  if (!require(p, character.only = TRUE)) {
+    install.packages(p, character.only = TRUE)
+  }
+}
+
+# load libraries
+library(tidyverse)
+library(sf)
+library(dplyr)
+library(here)
+library(arrow)
+library(ggplot2)
+library(janitor)
+library(purrr)
+library(knitr)
+library(kableExtra)
+library(ggcorrplot)
+library(modelsummary)
+
+# load data
+cleaned_data <- read_parquet(here::here("data/analysis_data/procurement_cleaned.parquet"))
+```
+
+# Introduction
+
+
+
+The main estimand is:
+
+
+The structure of the paper is as follows: [@sec-data] outlines the data sources and variables considered, followed by the model setup in [@sec-modset] and justification in [@sec-modjust]. The results in [@sec-result] presents the key findings of the analysis, with a discussion on the implications. [@sec-discussion] then discusses potential limitations and suggestions for future research. [@sec-appx] provides additional detailed information about the data, model and methodology.
+
+# Data {#sec-data}
+
+## Overview
+
+The data used in this analysis comes from a combination of publicly available procurement data [@IJF]. The analysis uses the statistical programming language R [@citeR] and several libraries, including `tidyverse` [@tidyverse], `janitor` [@janitor], `knitr` [@knitr], `dplyr` [@dplyr], `arrow` [@arrow], `purrr` [@purrr], `sf` [@sf], and `here` [@here] for data manipulation. `ggplot2` [@ggplot], `ggcorrplot` [@ggcorrplot] and `kableExtra` [@kableExtra] for visualization. The dataset covers various polls conducted across multiple states, capturing the support for each major candidate—Donald Trump and Kamala Harris—along with detailed attributes of the polls.
+
+## Measurement
+
+The dataset: .
+
+The measurement process begins with: .
+
+
+
+## Data Cleaning
+
+This paper first select and rename key variables from raw data to focus on relevant information. The key variables of interest in our analysis include Contract, StartDate, AwardDate, EndDate, Buyer, and Amount, with PreparatoryPhase and ContractTime being variables created.
+
+
+More information on the data cleaning process can be found in @sec-appx.
+
+## Outcome Variables
+
+The main outcome variable of interest is: . 
+
+```{r}
+
+```
+
+## Predictor Variables
+
+In this analysis, several key predictors were identified to evaluate proocurement data effectively. 
+
+
+
+# Model
+
+
+
+## Model Set-Up {#sec-modset}
+
+
+
+## Model Justification {#sec-modjust}
+
+
+## Assumptions and Limitations
+
+
+
+## Model Validation
+
+
+
+# Results {#sec-result}
+
+\newpage
+
+# Discussion {#sec-discussion}
+
+
+\newpage
+
+# Appendix {#sec-appx}
+
+## Data Cleaning Notes
+
+
+## Additional Tables & Figures
+
+## Methodology
+
+
+## Idealized Methodology
+
+
+## Idealized Survey
+
+\newpage
+
+# References

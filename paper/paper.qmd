@@ -1,12 +1,12 @@
 ---
-title: "Microsoft Procurement"
-subtitle: "SUBTITLE"
+title: "Procurement Dynamics: Analyzing Federal Contract Awards to Microsoft"
+subtitle: "A Comprehensive Study of Microsoft’s Role in Canadian Government Procurement (NEED a better SUBTITLE being more specific)"
 author: 
   - Deyi Kong
 thanks: "Code and data are available at: [https://github.com/eeeee-cmd/Procurement/](https://github.com/eeeee-cmd/Procurement/)."
 date: today
 date-format: long
-abstract: "This paper analizes the procurement supplier, Microsoft."
+abstract: "This paper analyzes the federal procurement contracts awarded to Microsoft, focusing on trends in award values, the categories of the contract, and the relationships between Microsoft and government buyers. Using IJF procurement dataset, we found that Microsoft engages significant role in IT infrastructure and modernization efforts. The analysis reveals that Microsoft dominates high-value contracts and demonstrates consistent partnerships with key government departments. By examining these procurement dynamics, this paper providing insights into the broader implications of tech-industry participation in government procurement."
 format: pdf
 toc: true
 toc-depth: 3
@@ -51,7 +51,7 @@ cleaned_data <- read_parquet(here::here("data/analysis_data/procurement_cleaned.
 
 
 
-The main estimand is:
+The main estimand is the dollar amount of federal contracts.
 
 
 The structure of the paper is as follows: [@sec-data] outlines the data sources and variables considered, followed by the model setup in [@sec-modset] and justification in [@sec-modjust]. The results in [@sec-result] presents the key findings of the analysis, with a discussion on the implications. [@sec-discussion] then discusses potential limitations and suggestions for future research. [@sec-appx] provides additional detailed information about the data, model and methodology.
@@ -82,14 +82,91 @@ More information on the data cleaning process can be found in @sec-appx.
 The main outcome variable of interest is: . 
 
 ```{r}
+#| label: fig-amount
+#| fig-cap: The histogram shows the distribution of the total amount($million) of each year's federal contract (since 2020). [An increasing trend may reflect the growing importance of technology in government operations, including software, cloud solutions, and IT infrastructure.]
+#| echo: false
+#| eval: true
+#| warning: false
+#| message: false
+
+# Extract year from AwardDate and filter the year from 2020 to 2024
+year_data <- cleaned_data %>%
+  mutate(
+    Year = as.integer(format(as.Date(AwardDate), "%Y"))) %>%
+  filter(
+    Year != 2019
+  )
+
+# Sum the total amount group by year
+yearly_amount <- year_data %>%
+  group_by(Year) %>%
+  summarize(TotalAmount = sum(Amount, na.rm = TRUE)) %>%
+  mutate(TotalAmount = round(TotalAmount / 1000000)) # Convert to millions
+
+# Plot the amount in each year
+ggplot(yearly_amount, aes(x = as.factor(Year), y = TotalAmount)) +
+  geom_bar(stat = "identity", fill = "darkorange", color = "black", alpha = 0.7) +
+  labs(
+    title = "Total Contract Amounts by Year for Microsoft",
+    x = "Year",
+    y = "Total Amount ($million)"
+  ) +
+  theme_minimal() +
+  theme(axis.text.y = element_text(size = 10), axis.text.x = element_text(size = 10))
 
 ```
+
 
 ## Predictor Variables
 
 In this analysis, several key predictors were identified to evaluate proocurement data effectively. 
 
 
+```{r}
+#| label: fig-preparatory
+#| fig-cap: The histogram shows the distribution of preparatory period, which demonstrates the days between start and awarded date. A high concentration around 0 indicates rapid procurement processes or some emergency software services. There are a few outlying contracts with a mobilization period of over one year. These long mobilization periods suggest issues such as delays in the procurement process, a long negotiation period, or administrative approvals.
+#| echo: false
+#| eval: true
+#| warning: false
+#| message: false
+
+# create plot for Distribution of Poll Scores by candidate
+ggplot(cleaned_data, aes(x = PhaseDays)) +
+  geom_histogram(
+    bins = 30,
+    fill = "salmon",
+    color = "black",
+    alpha = 0.7
+  ) +
+  labs(
+    x = "Preparatory Phase (day)",
+    y = "Frequency"
+  ) +
+  theme_minimal()
+```
+
+```{r}
+#| label: fig-contract
+#| fig-cap: The histogram shows the distribution of performance period, which demonstrates the days between start and end date. The right skewed distribution indicates that the majority of contract duration is within a year. An over 5 years performance period implies a massive project that requires extensive preparation.
+#| echo: false
+#| eval: true
+#| warning: false
+#| message: false
+
+# create plot for Distribution of Poll Scores by candidate
+ggplot(cleaned_data, aes(x = ContractDays)) +
+  geom_histogram(
+    bins = 15,
+    fill = "steelblue",
+    color = "black",
+    alpha = 0.7
+  ) +
+  labs(
+    x = "Contract Performance Phase (day)",
+    y = "Frequency"
+  ) +
+  theme_minimal()
+```
 
 # Model
 
@@ -131,8 +208,6 @@ In this analysis, several key predictors were identified to evaluate proocuremen
 
 ## Idealized Methodology
 
-
-## Idealized Survey
 
 \newpage
 

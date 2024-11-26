@@ -70,7 +70,9 @@ cleaned_data <- tryCatch(
 # Add preparatory phase and contract total days
 cleaned_data <- cleaned_data %>%
   mutate(PreparatoryPhase = as.numeric(StartDate - AwardDate),
-         ContractDays = as.numeric(EndDate - StartDate))
+         ContractDays = as.numeric(EndDate - StartDate),
+         PhaseDays = abs(PreparatoryPhase)
+         )
 
 # # Summary all the variables
 # sort(table(cleaned_data$Contract), decreasing = T)
@@ -118,7 +120,12 @@ clean_supplier_names <- function(supplier) {
 cleaned_data <- cleaned_data %>%
   mutate(Supplier = clean_supplier_names(Supplier))
 
-sort(table(cleaned_data$Supplier), decreasing = T)
+## Check variables
+# sort(table(cleaned_data$Supplier), decreasing = T)
+# sort(table(cleaned_data$PreparatoryPhase), decreasing = T)
+# summary(cleaned_data$PreparatoryPhase)
+# sort(table(cleaned_data$PhaseDays), decreasing = T)
+# summary(cleaned_data$PhaseDays)
 
 # MIGHT GOING TO ADD SOME CLEANING PROCESS ABOUT CONTRACT CATEGORY
 

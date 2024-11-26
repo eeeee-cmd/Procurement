@@ -1,7 +1,7 @@
 #### Preamble ####
 # Purpose: Run a linear regression model to predict 
 # Author: Deyi Kong
-# Date: November 24th, 2024
+# Date: November 26th, 2024
 # Contact: deyi.kong@mail.utoronto.ca
 # License: MIT
 # Pre-requisites: The `tidyverse` and 'here' packages must be installed
@@ -9,10 +9,24 @@
 
 # load libraries
 library(tidyverse)
+library(here)
+library(arrow)
 
+# convert some columns to the appropriate data types
+cleaned_data <- read_parquet(here::here("data/analysis_data/procurement_cleaned.parquet"))
+cleaned_data <- cleaned_data %>%
+  mutate(
+    Contract = as.factor(Contract),
+    Buyer = as.factor(Buyer),
+    Supplier = as.factor(Supplier)
+  )
 
+# linear model for contract dollar amount based on various predictors
+lm_model <- lm(Amount ~ Contract + Buyer + Supplier + ContractDays + PhaseDays,
+                     data = cleaned_data
+               )
 
 # save modified data for the model as a CSV + Parquet and save models as RDS
 write_csv(cleaned_data, here::here("data/analysis_data/data.csv"))
 write_parquet(cleaned_data, here::here("data/analysis_data/data.parquet"))
-saveRDS(lm_model_1, here::here("models/lm_model_1.rds"))
+saveRDS(lm_model, here::here("models/lm_model.rds"))

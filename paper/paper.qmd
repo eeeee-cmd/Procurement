@@ -230,11 +230,13 @@ This dataset contains a series of date-type variables capturing key milestones i
 
 ```{r}
 #| label: fig-preparatory
-#| fig-cap: The histogram shows the distribution of preparatory period, which demonstrates the days between start and awarded date.
+#| fig-cap: The histogram shows the distribution of preparatory period.
 #| echo: false
 #| eval: true
 #| warning: false
 #| message: false
+#| fig.width: 4    # Width of the figure in inches
+#| fig.height: 3   # Height of the figure in inches
 
 # create plot for Distribution of Poll Scores by candidate
 ggplot(cleaned_data, aes(x = PhaseDays)) +
@@ -255,7 +257,7 @@ ggplot(cleaned_data, aes(x = PhaseDays)) +
 
 ```{r}
 #| label: fig-contract
-#| fig-cap: The histogram shows the distribution of performance period, which demonstrates the days between start and end date. The right skewed distribution indicates that the majority of contract duration is within a year.
+#| fig-cap: The histogram shows the distribution of performance period, which demonstrates the days between start and end date.
 #| echo: false
 #| eval: true
 #| warning: false
@@ -276,24 +278,28 @@ ggplot(cleaned_data, aes(x = ContractDays)) +
   theme_minimal()
 ```
 
-\newpage
-
 # Model
 
+To understand the factors influencing the amount of federal procurement contracts awarded to Microsoft. I construct a linear regression model to explains variations in contract values.
 
 ## Model Set-Up {#sec-modset}
 
-+ Model Justification
+This paper utilizes a linear regression model to examine the relationships between the dependent variable.
 
+$$Amount = \beta_0 + \beta_1 Contract + \beta_2 Buyer + \beta_3 ContractDays + \beta_4 PhaseDays + \epsilon$$
+As defined in [@sec-data], each predictor variable has been chosen to reflect characteristics that influence the contract amount.
 
 ## Assumptions and Limitations
 
+The model takes several assumptions, including the relationship between the predictors and the outcome is linear, each contract is independent, the variance of the error term is constant, and predictor variables are not highly correlated with each other.
 
+While the model presented offers valuable insights into the dynamics of Microsoft’s federal procurement contracts, there are some limitations including categorization of contract types, generalizability, data quality, potential for endogeneity, and unobserved variables. These limitations will be discussed in [@sec-discussion].
 
-## Model Validation
+## Model Validation?
 
+R-squared, adjusted R-squared 
 
-\newpage
+tests (e.g. VIF, AIC, BIC).
 
 # Results {#sec-result}
 
@@ -334,7 +340,7 @@ ggplot(contract_counts, aes(x = YearPeriod, y = Count, fill = Count)) +
 
 ```{r}
 #| label: fig-mobilization
-#| fig-cap: The scatter plot shows the distribution of performance period, which demonstrates the days between start and end date. The right skewed distribution indicates that the majority of contract duration is within a year. An over 5 years performance period implies a massive project that requires extensive preparation.
+#| fig-cap: The scatter plot shows ...
 #| echo: false
 #| eval: true
 #| warning: false
@@ -349,7 +355,7 @@ ggplot(data, aes(x = AwardDate, y = StartDate)) +
 
 ```{r}
 #| label: fig-performance
-#| fig-cap: The scatter plot shows the distribution of performance period, which demonstrates the days between start and end date. The right skewed distribution indicates that the majority of contract duration is within a year. An over 5 years performance period implies a massive project that requires extensive preparation.
+#| fig-cap: The scatter plot shows ....
 #| echo: false
 #| eval: true
 #| warning: false
@@ -373,8 +379,6 @@ ggplot(data, aes(x = StartDate, y = EndDate)) +
 
 ## Data Cleaning Notes
 
-
-## Additional Tables & Figures
 
 ## Methodology
 

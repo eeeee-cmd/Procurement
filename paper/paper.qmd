@@ -377,15 +377,41 @@ ggplot(data, aes(x = StartDate, y = EndDate)) +
 
 # Appendix {#sec-appx}
 
-## Data Cleaning Notes
-
-
 ## Methodology
 
-Federal solicitation methods are either competitive or non-competitive. Competitive contracts accept bids from all or some subset of suppliers. Non-competitive contracts do not, citing certain exceptions, including a “pressing emergency in which delay would be injurious to the public interest,” or when the estimated cost to the buyer is below certain thresholds defined for some goods and services. [@ProcurementSources]
+The methodology employed in this study involves analyzing federal procurement contracts awarded to Microsoft, leveraging data from two primary sources: Public Services and Procurement Canada (PSPC) and the Treasury Board of Canada Secretariat (TBS). These two datasets provide information on government procurement, but they come with distinct limitations and reporting structures [@ProcurementSources].
 
-## Idealized Methodology
+1. Data Sources and Structure:
 
+Federal procurement data is categorized into two main streams:
+
++ PSPC serves as the central procurement body for most federal government departments and is responsible for managing a significant portion of federal contracts. It maintains a public platform called CanadaBuys, where procurement information is published. However, due to migration from the older BuyAndSell platform and the incomplete nature of pre-2022 data, some variables, such as contract types and trade agreement information, are missing or inconsistently reported. The PSPC data is particularly useful for understanding contracts where the PSPC is the managing body, but only contracts above a certain dollar threshold are publicly available.
+
++ TBS consolidates procurement data from all government departments and requires proactive publication under the Access to Information Act. The TBS dataset is more comprehensive in terms of the number of contracts, but it suffers from inconsistencies and gaps in the reported fields. TBS publishes data quarterly, and records before 2017 should not be considered complete. Unlike PSPC, TBS data includes the full details of contract awards but does not incorporate tender or solicitation data.
+
+2. Data Integration and Challenges:
+
+There is an overlap between TBS and PSPC data, such that many contracts reported by PSPC are also included in the TBS dataset. However, the two datasets do not always align perfectly. Contracts reported by TBS may contain different details from the PSPC records. 
+
+This mismatch is exacerbated by the lack of a consistent unique identifier that would allow for easy linking between the two datasets. While about 20% of PSPC awards have matching TBS records, many contracts do not, making it impossible to perfectly merge the two datasets.
+
+To address this, both datasets were kept separate in [@ProcurementSources]. PSPC data was used primarily for its comprehensive tender information, while TBS data was relied upon for its broader coverage of contract awards, spanning more years and a greater volume of contracts.
+
+3. Solicitation Methods and Contract Types:
+
+Federal procurement processes are governed by various solicitation methods, which determine how contracts are awarded. These methods are categorized into competitive and non-competitive processes. 
+
+Four competitive options:
+
++ Open bidding: Any supplier can bid in response to an online solicitation.
++ Selective tendering: Only some prequalified suppliers can bid.
++ Limited tendering: Deviation from requirements of the relevant trade agreements (see Trade Agreements), still allowing bids.
++ Traditional: Many suppliers can bid but not in response to a public, online solicitation; for example, responding to an email sent to suppliers by the government.
+
+Two non-competitive options:
+
++ Advanced Contract Award Notice: Notice to suppliers that the buyer intends to award a contract to a pre-identified supplier, while accepting a Statement of Capabilities, not a bid, from challenging suppliers. 
++ Non-competitive: Blanket category for all other non-competitive processes.
 
 \newpage
 

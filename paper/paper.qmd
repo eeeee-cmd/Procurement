@@ -287,13 +287,19 @@ This paper utilizes a linear regression model to examine the relationships betwe
 $$Amount = \beta_0 + \beta_1 Contract + \beta_2 Buyer + \beta_3 ContractDays + \beta_4 PhaseDays + \epsilon$$
 As defined in [@sec-data], each predictor variable has been chosen to reflect characteristics that influence the contract amount.
 
+### Model Justification
+We expect a positive relationship between the size of the wings and time spent aloft. In particular...
+
+We can use maths by including latex between dollar signs, for instance $\theta$.
+
+
 ## Assumptions and Limitations
 
 The model takes several assumptions, including the relationship between the predictors and the outcome is linear, each contract is independent, the variance of the error term is constant, and predictor variables are not highly correlated with each other.
 
 While the model presented offers valuable insights into the dynamics of Microsoft’s federal procurement contracts, there are some limitations including categorization of contract types, generalizability, data quality, potential for endogeneity, and unobserved variables. These limitations will be discussed in [@sec-discussion].
 
-## Model Validation?
+## Model Validation [REMOVE?]
 
 R-squared, adjusted R-squared 
 
@@ -370,17 +376,21 @@ ggplot(data, aes(x = StartDate, y = EndDate)) +
 
 # Discussion {#sec-discussion}
 
-## 
+## Data
+
+The completeness and reliability of the data. For the missing or erroneous records, despite the data cleaning process, introduce bias and distort the findings.
+
+Since the data of the procurement contracts awarded to Microsoft in Canada is between 2020 and 2024 (up to September), the analysis provides a snapshot of recent procurement trends during this period. However, the data do not capture longer-term patterns or emerging shifts in procurement policies.
 
 ## Limitations
 
 One limitation of the model is that it may fail to account for certain external factors or unobserved variables such as political factors, budgetary constraints, and departmental priorities. These external factors could lead to omitted variable bias, which also influence procurement decision.
 
-The model assumes a linear relationship between the independent variables and the dependent variable. However, procurement dynamics may be more complex, with non-linear interactions between variables. [The model categorizes contract types and buyers into broad groups, which may oversimplify the true diversity of contracts awarded. 
+The model assumes a linear relationship between the independent variables and the dependent variable. However, procurement dynamics may be more complex, with non-linear interactions between variables. The model categorizes contract types and buyers into broad groups, which may oversimplify the true diversity of contracts awarded. 
 
 There may be issues of endogeneity, where causality runs in both directions between some predictors and the outcome variable. The amount of procurement from a buyer may influence the allocation of future budgets to that department, which in turn affects future contract amounts awarded to Microsoft. This reciprocal relationship could introduce bias in the coefficient estimates if not properly addressed.
 
-## Next Steps
+## Weaknesses and Next Steps
 
 This paper provides a foundation for a deeper understanding of federal contract awards to Microsoft, but it also suggests several directions for future exploration. First, the study can expand to include comparisons with other major suppliers. By examining whether Microsoft's procurement trends are unique or reflective of broader patterns across industries. This gives a better understanding on assess whether certain dynamics are systemic within federal contracting practices.
 
@@ -394,7 +404,7 @@ Data quality and consistency issues are also of concern. The anomalies identifie
 
 The methodology employed in this study involves analyzing federal procurement contracts awarded to Microsoft, leveraging data from two primary sources: Public Services and Procurement Canada (PSPC) and the Treasury Board of Canada Secretariat (TBS). These two datasets provide information on government procurement, but they come with distinct limitations and reporting structures [@ProcurementSources].
 
-1. Data Sources and Structure:
+### Data Sources and Structure
 
 Federal procurement data is categorized into two main streams:
 
@@ -402,7 +412,7 @@ Federal procurement data is categorized into two main streams:
 
 + TBS consolidates procurement data from all government departments and requires proactive publication under the Access to Information Act. The TBS dataset is more comprehensive in terms of the number of contracts, but it suffers from inconsistencies and gaps in the reported fields. TBS publishes data quarterly, and records before 2017 should not be considered complete. Unlike PSPC, TBS data includes the full details of contract awards but does not incorporate tender or solicitation data.
 
-2. Data Integration and Challenges:
+### Data Integration and Challenges:
 
 There is an overlap between TBS and PSPC data, such that many contracts reported by PSPC are also included in the TBS dataset. However, the two datasets do not always align perfectly. Contracts reported by TBS may contain different details from the PSPC records. 
 
@@ -410,7 +420,7 @@ This mismatch is exacerbated by the lack of a consistent unique identifier that 
 
 To address this, both datasets were kept separate in [@ProcurementSources]. PSPC data was used primarily for its comprehensive tender information, while TBS data was relied upon for its broader coverage of contract awards, spanning more years and a greater volume of contracts.
 
-3. Solicitation Methods and Contract Types:
+### Solicitation Methods and Contract Types:
 
 Federal procurement processes are governed by various solicitation methods, which determine how contracts are awarded. These methods are categorized into competitive and non-competitive processes. 
 

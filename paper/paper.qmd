@@ -370,13 +370,21 @@ ggplot(data, aes(x = StartDate, y = EndDate)) +
 
 # Discussion {#sec-discussion}
 
-## Limitations of the Model
+## 
+
+## Limitations
 
 One limitation of the model is that it may fail to account for certain external factors or unobserved variables such as political factors, budgetary constraints, and departmental priorities. These external factors could lead to omitted variable bias, which also influence procurement decision.
 
 The model assumes a linear relationship between the independent variables and the dependent variable. However, procurement dynamics may be more complex, with non-linear interactions between variables. [The model categorizes contract types and buyers into broad groups, which may oversimplify the true diversity of contracts awarded. 
 
 There may be issues of endogeneity, where causality runs in both directions between some predictors and the outcome variable. The amount of procurement from a buyer may influence the allocation of future budgets to that department, which in turn affects future contract amounts awarded to Microsoft. This reciprocal relationship could introduce bias in the coefficient estimates if not properly addressed.
+
+## Next Steps
+
+This paper provides a foundation for a deeper understanding of federal contract awards to Microsoft, but it also suggests several directions for future exploration. First, the study can expand to include comparisons with other major suppliers. By examining whether Microsoft's procurement trends are unique or reflective of broader patterns across industries. This gives a better understanding on assess whether certain dynamics are systemic within federal contracting practices.
+
+Data quality and consistency issues are also of concern. The anomalies identified in this study, such as incomplete or inconsistent contract dates, highlight the need for improved data reporting standards. These discrepancies can be addressed in collaboration with government agencies to improve the reliability of procurement datasets and ensure that future analyses are more reliable and actionable.
 
 \newpage
 

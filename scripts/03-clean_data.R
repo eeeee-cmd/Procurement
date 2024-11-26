@@ -16,8 +16,8 @@ library(arrow)
 # Read data
 data <- read_csv(here::here("data/raw_data/procurement.csv"))
 
-# Check if the contract region are all federal, then we will exclude it from the cleaned data
-table(data$region)
+# # Check if the contract region are all federal, then we will exclude it from the cleaned data
+# table(data$region)
 
 # Data cleasupplier# Data cleaning by renaming and selecting specific columns, date formatting, filtering invalid entries
 cleaned_data <- tryCatch(
@@ -43,7 +43,10 @@ cleaned_data <- tryCatch(
       ) %>%
       mutate(
         # To replace missing (NA) start date with the value of awarded date column
-        StartDate = ifelse(is.na(StartDate), AwardDate, StartDate)
+        StartDate = case_when(
+          is.na(StartDate) ~ AwardDate,
+          TRUE ~ StartDate
+        )
       ) %>%
       mutate(
         # Specify the format of the date for proper parsing
@@ -54,7 +57,9 @@ cleaned_data <- tryCatch(
       mutate(
         # Change the $format of dollar amount into numeric numbers
         Amount = as.numeric(gsub("[\\$,]", "", Amount))
-      )
+      ) %>%
+      # Drop contracts where EndDate is before StartDate or AwardDate due to error with unknown reason
+      filter(!(EndDate <= StartDate | EndDate <= AwardDate))
   }, # error handling to mitigate any cleaning issues
   error = function(e) {
     message("An error occurred during data cleaning: ", e)

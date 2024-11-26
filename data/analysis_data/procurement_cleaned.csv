@@ -25,7 +25,7 @@ Computer services (includes IT solutions/deliverables as well as IT managed serv
 License/Maintenance fees for client software related to Distributed Computing Environment (DCE),Canadian Radio-television and Telecommunications Commission,Microsoft Canada Inc.,16382,2024-09-01,2024-09-01,2025-03-31,0,211,0
 Client software related to Distributed Computing Environment (DCE),Fisheries and Oceans Canada,Microsoft Canada Co.,237141,2024-08-15,2024-08-15,2025-03-31,0,228,0
 Computer services (includes IT solutions/deliverables as well as IT managed services),Fisheries and Oceans Canada,Microsoft Canada Co.,282500,2024-08-14,2024-08-14,2024-11-30,0,108,0
-Computer services (includes IT solutions/deliverables as well as IT managed services),Environment and Climate Change Canada,"Microsoft Licensing, , GP",6770031,2020-12-01,2020-12-01,2024-10-01,0,1400,0
+Computer services (includes IT solutions/deliverables as well as IT managed services),Environment and Climate Change Canada,"Microsoft Licensing, GP",6770031,2020-12-01,2020-12-01,2024-10-01,0,1400,0
 Info Technology and Telecomm Consultants,Health Canada,Microsoft Canada Inc.,339000,2023-06-22,2023-06-22,2024-07-31,0,405,0
 LICENSE/MAINTENANCE FEES FOR CLIENT SOFTWARE RELATED TO DISTRIBUTED COMPUTING ENVIRONMENT,Transport Canada,Microsoft Canada Inc.,97388,2022-05-16,2022-05-16,2024-07-05,0,781,0
 Client Software,Public Health Agency of Canada,Microsoft Canada,12430,2022-04-06,2022-04-06,2023-03-31,0,359,0
@@ -77,7 +77,7 @@ License/Maintenance fees for client software related to Distributed Computing En
 License/Maintenance fees for client software related to Distributed Computing Environment (DCE),Immigration and Refugee Board of Canada,Microsoft Canada Inc.,31439,2024-04-01,2024-04-01,2026-03-31,0,729,0
 License/Maintenance fees for client software related to Distributed Computing Environment (DCE),Immigration and Refugee Board of Canada,Microsoft Canada Inc.,52903,2024-04-18,2024-05-01,2026-03-31,13,699,13
 Client software related to Distributed Computing Environment (DCE),Elections Canada,Microsoft Canada Inc.,74791,2023-07-01,2023-07-01,2025-06-30,0,730,0
-"License/Maintenance fees for operating system and utility software related to servers, storage, peripherals and components",International Joint Commission,"Microsoft Licensing, , GIP",21582,2024-04-01,2024-04-01,2025-03-31,0,364,0
+"License/Maintenance fees for operating system and utility software related to servers, storage, peripherals and components",International Joint Commission,"Microsoft Licensing, GIP",21582,2024-04-01,2024-04-01,2025-03-31,0,364,0
 License/Maintenance fees for client software related to Distributed Computing Environment (DCE),Immigration and Refugee Board of Canada,Microsoft Canada Inc.,248109,2024-04-01,2024-04-01,2025-03-31,0,364,0
 "License/Maintenance fees for operating system and utility software related to servers, storage, peripherals and components",Elections Canada,Microsoft Canada Inc.,289792,2024-04-01,2024-04-01,2025-03-31,0,364,0
 Application Software (including COTS) and Application Development and Delivery Software,Statistics Canada,Microsoft Canada Inc.,175941,2020-12-04,2020-12-04,2025-03-31,0,1578,0
@@ -286,7 +286,7 @@ LIC/MAINT FEES CLIENT SOFTWARE,Public Service Commission of Canada,Microsoft,260
 Client software related to Distributed Computing Environment (DCE),Natural Resources Canada,Microsoft Corp.,19602,2022-12-13,2022-12-13,2026-03-31,0,1204,0
 LIC/MAINT FEES CLIENT SOFTWARE,Public Service Commission of Canada,Microsoft Canada Inc.,38965,2023-09-01,2023-09-01,2026-03-31,0,942,0
 License/Maintenance fees for application software (including COTS) and application development and delivery software,Canadian Transportation Agency,Microsoft Canada Inc.,19330,2023-10-25,2023-10-25,2026-03-31,0,888,0
-Client software related to Distributed Computing Environment (DCE),Correctional Service of Canada,"Microsoft Licensing, , GP",67807,2023-09-01,2023-10-01,2026-03-31,30,912,30
+Client software related to Distributed Computing Environment (DCE),Correctional Service of Canada,"Microsoft Licensing, GP",67807,2023-09-01,2023-10-01,2026-03-31,30,912,30
 License/Maintenance fees for client software related to Distributed Computing Environment (DCE),Veterans Affairs Canada,Microsoft Canada,19380,2023-12-08,2023-12-01,2026-03-31,-7,851,7
 License/Maintenance fees for client software related to Distributed Computing Environment (DCE),Privy Council Office,Microsoft Canada Inc.,13849,2023-07-07,2023-08-01,2026-03-31,25,973,25
 License/Maintenance fees for client software related to Distributed Computing Environment (DCE),Veterans Affairs Canada,Microsoft Canada,296090,2024-03-05,2024-02-14,2026-03-31,-20,776,20
@@ -489,7 +489,7 @@ License/Maintenance fees for client software related to Distributed Computing En
 Management consulting,Prairies Economic Development Canada,Microsoft Canada Inc.,80167,2023-06-02,2023-04-01,2024-03-31,-62,365,62
 License/Maintenance fees for application software (including COTS) and application development and delivery software,Global Affairs Canada,Microsoft Corp.,587770,2023-04-20,2023-04-20,2024-03-31,0,346,0
 License/Maintenance fees for application software (including COTS) and application development and delivery software,Global Affairs Canada,Microsoft Corp.,3835092,2023-04-01,2023-04-01,2024-03-31,0,365,0
-"License/Maintenance fees for operating system and utility software related to servers, storage, peripherals and components",International Joint Commission,"Microsoft Licensing, , GIP",20796,2023-04-01,2023-04-01,2024-03-31,0,365,0
+"License/Maintenance fees for operating system and utility software related to servers, storage, peripherals and components",International Joint Commission,"Microsoft Licensing, GIP",20796,2023-04-01,2023-04-01,2024-03-31,0,365,0
 Computer services (includes IT solutions/deliverables as well as IT managed services),Canadian Human Rights Commission,Microsoft Canada Inc.,143464,2023-01-23,2023-04-01,2024-03-31,68,365,68
 License/Maintenance fees for client software related to Distributed Computing Environment (DCE),Employment and Social Development Canada,Microsoft Canada Inc.,1730467,2023-03-22,2023-04-01,2024-03-31,10,365,10
 License/Maintenance fees for client software related to Distributed Computing Environment (DCE),Transportation Safety Board of Canada,Microsoft Canada,266477,2021-05-21,2021-05-21,2024-03-31,0,1045,0
@@ -705,7 +705,6 @@ Computer services (includes IT solutions/deliverables as well as IT managed serv
 License/Maintenance fees for client software related to Distributed Computing Environment (DCE),Prairies Economic Development Canada,Microsoft Canada Inc.,211810,2023-01-31,2023-01-31,2023-04-01,0,60,0
 Client software related to Distributed Computing Environment (DCE),National Research Council Canada,Microsoft Corp.,30551,2022-06-02,2022-06-02,2023-04-01,0,303,0
 INFORMATION TECHNOLOGY AND TELECOMMUNICATIONS CONSULTANTS,Transport Canada,Microsoft Canada Inc.,135600,2022-05-17,2022-05-17,2023-03-31,0,318,0
-Information technology and telecommunications consultants,Canadian Space Agency,Microsoft Canada Inc.,144436,2019-12-19,2019-12-19,2023-03-31,0,1198,0
 Computer services (includes IT solutions/deliverables as well as IT managed services),Natural Resources Canada,Microsoft Canada Inc.,791000,2022-03-04,2022-03-04,2023-03-31,0,392,0
 License/Maintenance fees for client software related to Distributed Computing Environment (DCE),Immigration and Refugee Board of Canada,Microsoft Canada Inc.,65901,2022-09-23,2022-09-23,2023-03-31,0,189,0
 License/Maintenance fees for application software (including COTS) and application development and delivery software,Agriculture and Agri-Food Canada,Microsoft Canada Inc.,206892,2022-04-01,2022-04-01,2023-03-31,0,364,0
@@ -800,7 +799,7 @@ Information technology and telecommunications consultants,Canadian Food Inspecti
 "Rental of computer equipment related to production and operations (P&O) environment - All servers, storage, printers, etc. (includes all related parts and peripherals)",Employment and Social Development Canada,Microsoft Canada Inc.,1346969,2022-09-28,2022-09-28,2023-03-31,0,184,0
 0582 License/Maintenance fees for client software related to Distributed Computing Environment (DCE),Office of the Information Commissioner of Canada,Microsoft Canada Inc.,79689,2022-01-25,2022-04-01,2023-03-31,66,364,66
 License/Maintenance fees for application software (including COTS) and application development and delivery software,Employment and Social Development Canada,Microsoft Canada Inc.,1695776,2022-06-13,2022-04-01,2023-03-31,-73,364,73
-"License/Maintenance fees for operating system and utility software related to servers, storage, peripherals and components",International Joint Commission,"Microsoft Licensing, , GIP",20796,2022-04-01,2022-04-01,2023-03-31,0,364,0
+"License/Maintenance fees for operating system and utility software related to servers, storage, peripherals and components",International Joint Commission,"Microsoft Licensing, GIP",20796,2022-04-01,2022-04-01,2023-03-31,0,364,0
 LICENSE/MAINTENANCE FEES FOR APPLICATION SOFTWARE (INCLUDING COTS) AND APPLICATION DEVELOPMENT AND DELIVERY SOFTWARE,Transport Canada,Microsoft Canada Inc.,603006,2022-08-22,2022-08-22,2023-03-31,0,221,0
 LICENSE/MAINTENANCE FEES FOR APPLICATION SOFTWARE (INCLUDING COTS) AND APPLICATION DEVELOPMENT AND DELIVERY SOFTWARE,Transport Canada,Microsoft Canada Inc.,223989,2023-02-01,2023-02-01,2023-03-31,0,58,0
 "Professional Services-Information technology, business and/or telecommunications",Shared Services Canada,Microsoft Canada Inc.,113373,2023-01-18,2023-01-18,2023-03-31,0,72,0
@@ -849,7 +848,7 @@ Application software (including COTS) and application development and delivery s
 License/Maintenance fees for application software (including COTS) and application development and delivery software,Treasury Board of Canada Secretariat,Microsoft Canada Inc.,171937,2022-03-01,2022-03-01,2023-02-28,0,364,0
 "License/Maintenance fees for operating system and utility software related to servers, storage, peripherals and components",Employment and Social Development Canada,Microsoft Canada Inc.,914796,2022-03-14,2022-03-01,2023-02-28,-13,364,13
 Client software related to Distributed Computing Environment (DCE),Correctional Service of Canada,Microsoft Canada Inc.,1354698,2022-03-17,2022-03-17,2023-02-27,0,347,0
-Application software (including COTS) and application development and delivery software,Canada Revenue Agency,"Microsoft Licensing, , GP",2464928,2022-12-23,2022-12-23,2023-02-23,0,62,0
+Application software (including COTS) and application development and delivery software,Canada Revenue Agency,"Microsoft Licensing, GP",2464928,2022-12-23,2022-12-23,2023-02-23,0,62,0
 Computer services (includes IT solutions/deliverables as well as IT managed services),Public Safety Canada,Microsoft Canada Inc.,141250,2022-03-23,2022-04-01,2023-01-31,9,305,9
 Computer services (includes IT solutions/deliverables as well as IT managed services),Natural Resources Canada,Microsoft Canada Inc.,223756,2021-01-21,2021-01-21,2023-01-31,0,740,0
 License/Maintenance fees for client software related to Distributed Computing Environment (DCE),Administrative Tribunals Support Service of Canada,Microsoft Canada Inc.,180511,2021-12-31,2022-01-01,2023-01-31,1,395,1
@@ -895,7 +894,6 @@ License/Maintenance fees for application software (including COTS) and applicati
 License/Maintenance fees for application software (including COTS) and application development and delivery software,Employment and Social Development Canada,Microsoft Canada Inc.,207917,2021-07-16,2021-07-14,2022-07-13,-2,364,2
 License/Maintenance fees for application software (including COTS) and application development and delivery software,National Defence,Microsoft,630539,2021-07-12,2021-07-12,2022-07-11,0,364,0
 License/Maintenance fees for application software (including COTS) and application development and delivery software,National Defence,Microsoft,958992,2021-07-12,2021-07-12,2022-07-11,0,364,0
-Data and Database Access Services,Canadian Human Rights Commission,Microsoft Canada Inc.,119845,2019-12-01,2019-12-01,2021-03-31,0,486,0
 Client software related to Distributed Computing Environment (DCE),National Research Council Canada,Microsoft Canada Inc.,39224,2021-05-24,2021-05-24,2022-04-30,0,341,0
 License/Maintenance fees for application software (including COTS) and application development and delivery software,Royal Canadian Mounted Police,Microsoft Canada Co.,238498,2022-05-30,2022-05-30,2022-06-30,0,31,0
 Computer services (includes IT solutions/deliverables as well as IT managed services),Public Services and Procurement Canada,Microsoft Canada Inc.,71799,2020-12-15,2021-06-01,2022-05-31,168,364,168

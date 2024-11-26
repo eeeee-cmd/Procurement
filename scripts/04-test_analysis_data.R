@@ -23,7 +23,7 @@ test_results <- list()
 test_results$structure <- test_that("Data structure", {
   expect_true(is.data.frame(cleaned_data), info = "clean_data is not a data frame.")
   expect_equal(ncol(cleaned_data), 10, info = "clean_data does not have the correct number of columns.")
-  expect_equal(nrow(cleaned_data), 950, info = "clean_data does not have the correct number of rows.")
+  expect_equal(nrow(cleaned_data), 948, info = "clean_data does not have the correct number of rows.")
 })
 
 # test if column names match expected names

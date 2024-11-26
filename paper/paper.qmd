@@ -1,12 +1,12 @@
 ---
 title: "Procurement Dynamics: Analyzing Federal Contract Awards to Microsoft"
-subtitle: "A Comprehensive Study of Microsoft’s Role in Canadian Government Procurement (NEED a better SUBTITLE being more specific)"
+subtitle: "Trends and Insights of Microsoft’s Future in Canadian Government from 2020"
 author: 
   - Deyi Kong
 thanks: "Code and data are available at: [https://github.com/eeeee-cmd/Procurement/](https://github.com/eeeee-cmd/Procurement/)."
 date: today
 date-format: long
-abstract: "This paper analyzes the federal procurement contracts awarded to Microsoft, focusing on trends in award values, the categories of the contract, and the relationships between Microsoft and government buyers. Using IJF procurement dataset, we found that Microsoft engages significant role in IT infrastructure and modernization efforts. The analysis reveals that Microsoft dominates high-value contracts and demonstrates consistent partnerships with key government departments. By examining these procurement dynamics, this paper providing insights into the broader implications of tech-industry participation in government procurement."
+abstract: "This paper analyzes the federal procurement contracts awarded to Microsoft, focusing on trends in award values, contract categories, and the relationships between buyers and Microsoft. The analysis reveals that Microsoft dominates high-value contracts and demonstrates consistent partnerships with key government departments. This paper utilizes a linear model to predict the future contract amount trend for Microsoft. By examining these procurement dynamics, this paper providing insights into the broader implications of tech-industry participation in government procurement."
 format: pdf
 toc: true
 toc-depth: 3
@@ -49,41 +49,51 @@ cleaned_data <- read_parquet(here::here("data/analysis_data/procurement_cleaned.
 
 # Introduction
 
+Government procurement serves as a critical avenue for public sector innovation, economic stimulus, and the fulfillment of strategic objectives. Within this landscape, the relationship between major technology providers and governmental bodies has become increasingly prominent. Among these, Microsoft has emerged as a pivotal partner in driving IT modernization and infrastructure development. Despite the growing reliance on tech giants, limited research has comprehensively examined the dynamics of such partnerships, particularly in the context of federal procurement contracts.
 
+This paper addresses this gap by conducting a detailed analysis of federal procurement contracts awarded to Microsoft between 2020 and September 2024. Using publicly available data from the Investigative Journalism Foundation, the study explores trends in contract values, contract types, and Microsoft’s relationships with key government buyers. Emphasis is placed on identifying patterns in contract allocation and the implications of Microsoft's dominance in high-value contracts.
 
-The main estimand is the dollar amount of federal contracts.
+The main estimand in this study is the amount of federal procurement contracts awarded to Microsoft. This metric is analyzed across multiple dimensions, including contract categories, durations, and partnerships, to quantify Microsoft's role in federal procurement comprehensively. The findings reveal that Microsoft plays a dominant role in IT infrastructure and modernization, securing the majority of high-value contracts and establishing consistent partnerships with departments such as Employment and Social Development Canada and National Defence. These insights highlight the broader implications of the private tech sector’s influence on public sector procurement, raising questions about competitiveness, dependency, and strategic alignment.
 
+This study contributes to understand the procurement landscape, providing valuable information for policymakers, industry stakeholders, and academics. It underscores the importance of transparency, strategic planning, and balancing innovation with equity in government contracts.
 
-The structure of the paper is as follows: [@sec-data] outlines the data sources and variables considered, followed by the model setup in [@sec-modset] and justification in [@sec-modjust]. The results in [@sec-result] presents the key findings of the analysis, with a discussion on the implications. [@sec-discussion] then discusses potential limitations and suggestions for future research. [@sec-appx] provides additional detailed information about the data, model and methodology.
+The structure of the paper is as follows: [@sec-data] outlines the data sources and variables considered, followed by the model setup in [@sec-modset] and justification. The results in [@sec-result] presents the key findings of the analysis, with a discussion on the implications. [@sec-discussion] then discusses potential limitations and suggestions for future research. [@sec-appx] provides additional detailed information about the data, model and methodology.
 
 # Data {#sec-data}
 
 ## Overview
 
-The data used in this analysis comes from a combination of publicly available procurement data [@IJF]. The analysis uses the statistical programming language R [@citeR] and several libraries, including `tidyverse` [@tidyverse], `janitor` [@janitor], `knitr` [@knitr], `dplyr` [@dplyr], `arrow` [@arrow], `purrr` [@purrr], `sf` [@sf], and `here` [@here] for data manipulation. `ggplot2` [@ggplot], `ggcorrplot` [@ggcorrplot] and `kableExtra` [@kableExtra] for visualization. The dataset covers various polls conducted across multiple states, capturing the support for each major candidate—Donald Trump and Kamala Harris—along with detailed attributes of the polls.
+The data used in this analysis comes from publicly available procurement data [@IJF]. The analysis uses the statistical programming language R [@citeR] and several libraries, including `tidyverse` [@tidyverse], `janitor` [@janitor], `knitr` [@knitr], `dplyr` [@dplyr], `arrow` [@arrow], `purrr` [@purrr], and `here` [@here] for data manipulation. `ggplot2` [@ggplot] and `kableExtra` [@kableExtra] for visualization. The dataset covers the information of chosen Federal Procurement Supplier - Microsoft - capturing the contracts from 2020 to 2024 (up to September). 
 
 ## Measurement
 
-The dataset: .
+The dataset used in this analysis originates from Canadian governments of all levels post solicitations for companies to search for business opportunities, as documented in @ProcurementIntro, then collects data from each of these platforms and unifies into standard format.
 
-The measurement process begins with: .
+The measurement process delegates contracts routed through Public Service and Procurement Canada (PSPC), and blanket disclosures organized by Treasury Board of Canada Secretariat (TBS) to understand the federal procurement. The methodologies of federal solicitations are either competitive or non-competitive. Competitive contracts accept bids from all or some subset of suppliers. Non-competitive contracts do not, citing certain exceptions, including a “pressing emergency in which delay would be injurious to the public interest,” or when the estimated cost to the buyer is below certain thresholds defined for some goods and services.
 
+More information about solicitation method can be found in @sec-appx.
 
+\newpage
 
 ## Data Cleaning
 
-This paper first select and rename key variables from raw data to focus on relevant information. The key variables of interest in our analysis include Contract, StartDate, AwardDate, EndDate, Buyer, and Amount, with PreparatoryPhase and ContractTime being variables created.
+After imported the raw dataset using `read_csv` function, I first select specific columns to focus on relevant information towards this study by omitting redundant information, such as the contract link and same value of region. Then I rename key variables from raw data for clarity. The key variables of interest in this analysis include Contract, StartDate, AwardDate, EndDate, Buyer, and Amount.
 
+For any missing data (NA) of StartDate, I infer the StartDate from the AwardDate to replace the missing value as the value of AwardDate. Then I standardize the date format of all date related datas for proper parsing by using `mdy()` function and change the dollar format of amount into numeric numbers for future calculation purposes. Due to the error with unknown reason that EndDate is before StartDate or AwardDate, those entries were excluded from this paper. 
 
-More information on the data cleaning process can be found in @sec-appx.
+PreparatoryPhase, PhaseDays, and ContractDays variables were created for the purpose of analyzing preparatory phase and performance phase corresponding to each contract. PreparatoryPhase calculates the days from AwardDate to StartDate. ContractDays calculates the days from StartDate to EndDate. PhaseDays take the absolute value of PreparatoryPhase because of the minor effect of either prepare before contract being awarded or prepare after contract being awarded.
+
+This dataset contains only two entries for 2019 federal procurement contracts awarded to Microsoft. So, I filter out the contracts before 2020 to focus on the records between 2020 and September 2024 as desired. Then I check the character type variables, Supplier and Contract, using `table()` function for the purpose of manipulating input error. I standardize the supplier's name which combine the similar name due to capitalization or some notation differences, and format them with first letter of each word capitalized.
+
+After completing the cleaning, we saved the final dataset in both Parquet and CSV formats for later analysis.
 
 ## Outcome Variables
 
-The main outcome variable of interest is: . 
+The main outcome variable of interest is the amount of federal procurement contracts awarded to Microsoft. This variable is need to represent the financial magnitude of Microsoft with the federal government and measurement of evaluating procurement dynamics. [@fig-amount] illustrates the annual total amounts of federal procurement contracts awarded to Microsoft from 2020 to 2024 (up to September). The histogram reveals a generally increasing trend of total value of each year's contract. This may reflect the growing of technology in government operations, including software, cloud solutions, and IT infrastructure. The amount in 2023 doubles the amount in 2021, which suggests a heightened investment in federal procurement funding and large-scale projects. 
 
 ```{r}
 #| label: fig-amount
-#| fig-cap: The histogram shows the distribution of the total amount($million) of each year's federal contract (since 2020). [An increasing trend may reflect the growing importance of technology in government operations, including software, cloud solutions, and IT infrastructure.]
+#| fig-cap: The histogram shows the distribution of the total amount($million) of each year's federal contract (since 2020).
 #| echo: false
 #| eval: true
 #| warning: false
@@ -92,10 +102,8 @@ The main outcome variable of interest is: .
 # Extract year from AwardDate and filter the year from 2020 to 2024
 year_data <- cleaned_data %>%
   mutate(
-    Year = as.integer(format(as.Date(AwardDate), "%Y"))) %>%
-  filter(
-    Year != 2019
-  )
+    Year = as.integer(format(as.Date(AwardDate), "%Y"))
+    )
 
 # Sum the total amount group by year
 yearly_amount <- year_data %>%
@@ -116,15 +124,113 @@ ggplot(yearly_amount, aes(x = as.factor(Year), y = TotalAmount)) +
 
 ```
 
-
 ## Predictor Variables
 
-In this analysis, several key predictors were identified to evaluate proocurement data effectively. 
+In this analysis, several key predictors were identified to evaluate procurement data effectively. The first variable, **Contract**, is a character-type variable that identifies each procurement contract awarded to Microsoft. [@tbl-contract] [SOME MODIFICATION OF CONTRACT CATEGORIES CLEANING PROCESS MAY APPLY]
 
+```{r}
+#| label: tbl-contract
+#| tbl-cap: The table summarizes the contract type which has over 25 contracts with the total dollar amount, and average dollar amount per contract. 
+#| echo: false
+#| eval: true
+#| warning: false
+#| message: false
+
+# Summarize the data and filter buyers with counts >= 25
+summary_table <- cleaned_data %>%
+  group_by(Contract) %>%
+  summarise(
+    Count = n(), 
+    TotalAmount = sum(Amount),  # Calculate the total contract value
+    AvgAmount = mean(Amount)    # Calculate the average contract value
+  ) %>%
+  filter(Count > 25) %>%
+  arrange(desc(Count))  # Arrange in descending order based on Count
+
+# Format the TotalAmount column with dollar format
+summary_table$TotalAmount <- scales::label_dollar()(summary_table$TotalAmount)
+summary_table$AvgAmount <- scales::label_dollar()(summary_table$AvgAmount)
+
+# Display the summary table using kableExtra for nicer formatting
+summary_table %>%
+  kable(col.names = c("Contract Type", "Counts", "Total Amount", "Average")) %>%
+  kable_styling(full_width = F, position = "center", bootstrap_options = c("striped", "hover")) %>%
+  column_spec(1, width = "22em")  # Set column width to wrap text
+
+```
+
+**Buyer** is a character-type variable representing the federal government department or agency who initiate and award the contract. [@tbl-buyer] shows the top 10 buyer's name who has over 25 contracts with Microsoft, which identifies key partners and understand the distribution of contracts across sectors. The table highlights that Employment and Social Development Canada (ESDC) and National Defence account over 50% of Microsoft's total awards. [CALCULATED 52.02%, BUT THINKING IF THIS SHOULD BE ADDED TO THE TABLE]
+
+```{r}
+#| label: tbl-buyer
+#| tbl-cap: The table summarizes top 10 buyer's name who has over 25 contracts with Microsoft in total with contract count, total dollar amount, and average dollar amount per contract. 
+#| echo: false
+#| eval: true
+#| warning: false
+#| message: false
+
+# Summarize the data and filter buyers with counts >= 25
+summary_table <- cleaned_data %>%
+  group_by(Buyer) %>%
+  summarise(
+    Count = n(), 
+    TotalAmount = sum(Amount),  # Calculate the total contract value
+    AvgAmount = mean(Amount)    # Calculate the average contract value
+  ) %>%
+  filter(Count > 25) %>%
+  arrange(desc(Count))  # Arrange in descending order based on Count
+
+# Format the TotalAmount column with dollar format
+summary_table$TotalAmount <- scales::label_dollar()(summary_table$TotalAmount)
+summary_table$AvgAmount <- scales::label_dollar()(summary_table$AvgAmount)
+
+# Display the summary table using kableExtra for nicer formatting
+summary_table %>%
+  kable(col.names = c("Buyer", "Contract", "Total Amount", "Average")) %>%
+  kable_styling(full_width = F, position = "center", bootstrap_options = c("striped", "hover")) %>%
+  column_spec(1, width = "22em")  # Set column width to wrap text
+
+```
+
+**Supplier** is a character-type variable includes all the affiliated subsidiary companies of Microsoft. [@tbl-supplier] shows the top 5 buyer's name who has awarded over 25 contracts. [DELETE THIS VARIABLE? OR MAYBE MOVE IT TO APPDX.]
+
+```{r}
+#| label: tbl-supplier
+#| tbl-cap: The table summarizes the main Microsoft supplier's name who has over 25 contracts with buyers in total with contract count, total dollar amount, and average dollar amount per contract. 
+#| echo: false
+#| eval: true
+#| warning: false
+#| message: false
+
+# Summarize the data and filter buyers with counts >= 25
+summary_table <- cleaned_data %>%
+  group_by(Supplier) %>%
+  summarise(
+    Count = n(), 
+    TotalAmount = sum(Amount),  # Calculate the total contract value
+    AvgAmount = mean(Amount)    # Calculate the average contract value
+  ) %>%
+  filter(Count > 25) %>%
+  arrange(desc(Count))  # Arrange in descending order based on Count
+
+# Format the TotalAmount column with dollar format
+summary_table$TotalAmount <- scales::label_dollar()(summary_table$TotalAmount)
+summary_table$AvgAmount <- scales::label_dollar()(summary_table$AvgAmount)
+
+# Display the summary table using kableExtra for nicer formatting
+summary_table %>%
+  kable(col.names = c("Suppllier", "Contract", "Total Amount", "Average")) %>%
+  kable_styling(full_width = F, position = "center", bootstrap_options = c("striped", "hover"))
+
+```
+
+This dataset contains a series of date-type variables capturing key milestones in the procurement process. **Award Date** is the date when the contract was officially granted to Microsoft. **Start Date** is the date when the contracted services or goods provision begins. **End Date** is the date when the contract is completed or terminated. These variables are essential for analyzing procurement timelines and trends over the study period.
+
+**PhaseDays** is a numeric variable demonstrates the days between AwardDate and StartDate. In [@fig-preparatory], there is a high concentration around 0 indicates rapid procurement processes or emergency software services. [@fig-preparatory] also shows a few outlying contracts with a mobilization period of over one year. These long mobilization periods reflects issues such as delays in the procurement process, a long negotiation period, or administrative approvals.
 
 ```{r}
 #| label: fig-preparatory
-#| fig-cap: The histogram shows the distribution of preparatory period, which demonstrates the days between start and awarded date. A high concentration around 0 indicates rapid procurement processes or some emergency software services. There are a few outlying contracts with a mobilization period of over one year. These long mobilization periods suggest issues such as delays in the procurement process, a long negotiation period, or administrative approvals.
+#| fig-cap: The histogram shows the distribution of preparatory period, which demonstrates the days between start and awarded date.
 #| echo: false
 #| eval: true
 #| warning: false
@@ -145,9 +251,11 @@ ggplot(cleaned_data, aes(x = PhaseDays)) +
   theme_minimal()
 ```
 
+**ContractDays** is a numeric variable which is the days between StartDate and EndDate. [@fig-contract] shows the distribution of performance period. The right skewed distribution in [@fig-contract] indicates that the majority of contract duration is within a year. There is an over 5 years performance period in [@fig-contract] implies a massive project that requires extensive preparation.
+
 ```{r}
 #| label: fig-contract
-#| fig-cap: The histogram shows the distribution of performance period, which demonstrates the days between start and end date. The right skewed distribution indicates that the majority of contract duration is within a year. An over 5 years performance period implies a massive project that requires extensive preparation.
+#| fig-cap: The histogram shows the distribution of performance period, which demonstrates the days between start and end date. The right skewed distribution indicates that the majority of contract duration is within a year.
 #| echo: false
 #| eval: true
 #| warning: false
@@ -168,15 +276,14 @@ ggplot(cleaned_data, aes(x = ContractDays)) +
   theme_minimal()
 ```
 
-# Model
+\newpage
 
+# Model
 
 
 ## Model Set-Up {#sec-modset}
 
-
-
-## Model Justification {#sec-modjust}
++ Model Justification
 
 
 ## Assumptions and Limitations
@@ -186,8 +293,74 @@ ggplot(cleaned_data, aes(x = ContractDays)) +
 ## Model Validation
 
 
+\newpage
 
 # Results {#sec-result}
+
+```{r}
+#| label: fig-date
+#| fig-cap: The heatmap ....
+#| echo: false
+#| eval: true
+#| warning: false
+#| message: false
+
+# Create a new variable for "four-month periods"
+data <- cleaned_data %>%
+  mutate(
+    Year = year(AwardDate),
+    Month = month(AwardDate),
+    Period = case_when(
+      Month %in% 1:4 ~ "Jan-Apr",
+      Month %in% 5:8 ~ "May-Aug",
+      Month %in% 9:12 ~ "Sep-Dec"
+    ),
+    YearPeriod = paste(Year, Period, sep = "-")  # Combine Year and Period
+  )
+
+# Count the number of contracts in each four-month period
+contract_counts <- data %>%
+  group_by(YearPeriod) %>%
+  summarise(Count = n())
+
+# Heatmap plot
+ggplot(contract_counts, aes(x = YearPeriod, y = Count, fill = Count)) +
+  geom_tile() +
+  scale_fill_gradient(low = "white", high = "red") +
+  labs(x = "Year-Period", y = "Frequency (Contract Count)", title = "Heatmap of Contracts by Four-Month Periods") +
+  theme_minimal() +
+  theme(axis.text.y = element_text(angle = 0))  # Keep y-axis labels readable
+```
+
+```{r}
+#| label: fig-mobilization
+#| fig-cap: The scatter plot shows the distribution of performance period, which demonstrates the days between start and end date. The right skewed distribution indicates that the majority of contract duration is within a year. An over 5 years performance period implies a massive project that requires extensive preparation.
+#| echo: false
+#| eval: true
+#| warning: false
+#| message: false
+#| 
+ggplot(data, aes(x = AwardDate, y = StartDate)) +
+  geom_point(aes(color = Contract)) +
+  labs(x = "Award Date", y = "Start Date", title = "Award Date vs Start Date") +
+  theme(legend.position = "none")  # This removes the legend
+```
+
+
+```{r}
+#| label: fig-performance
+#| fig-cap: The scatter plot shows the distribution of performance period, which demonstrates the days between start and end date. The right skewed distribution indicates that the majority of contract duration is within a year. An over 5 years performance period implies a massive project that requires extensive preparation.
+#| echo: false
+#| eval: true
+#| warning: false
+#| message: false
+#| 
+ggplot(data, aes(x = StartDate, y = EndDate)) +
+  geom_point(aes(color = Contract)) +
+  labs(x = "Start Date", y = "End Date", title = "Start Date vs End Date") +
+  theme(legend.position = "none")  # This removes the legend
+```
+
 
 \newpage
 
@@ -205,6 +378,7 @@ ggplot(cleaned_data, aes(x = ContractDays)) +
 
 ## Methodology
 
+Federal solicitation methods are either competitive or non-competitive. Competitive contracts accept bids from all or some subset of suppliers. Non-competitive contracts do not, citing certain exceptions, including a “pressing emergency in which delay would be injurious to the public interest,” or when the estimated cost to the buyer is below certain thresholds defined for some goods and services. [@ProcurementSources]
 
 ## Idealized Methodology
 

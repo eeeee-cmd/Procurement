@@ -2,7 +2,7 @@
 # Purpose: This script reads and cleans raw procurement data,
 # performing various transformations, and outputs the cleaned data to a CSV file.
 # Author: Deyi Kong
-# Date: November 25th, 2024
+# Date: November 26th, 2024
 # Contact: deyi.kong@mail.utoronto.ca
 # License: MIT
 # Pre-requisites: The `tidyverse`, 'here', and 'arrow' packages must be installed
@@ -69,10 +69,17 @@ cleaned_data <- tryCatch(
 
 # Add preparatory phase and contract total days
 cleaned_data <- cleaned_data %>%
-  mutate(PreparatoryPhase = as.numeric(StartDate - AwardDate),
-         ContractDays = as.numeric(EndDate - StartDate),
-         PhaseDays = abs(PreparatoryPhase)
-         )
+  mutate(
+    PreparatoryPhase = as.numeric(StartDate - AwardDate),
+    ContractDays = as.numeric(EndDate - StartDate),
+    PhaseDays = abs(PreparatoryPhase)
+    ) %>%
+  # Filter out the contracts before 2020
+  mutate(
+    Year = as.integer(format(as.Date(AwardDate), "%Y"))
+    ) %>%
+  filter(Year != 2019) %>%
+  select(-Year)  # Remove Year column after filtering
 
 # # Summary all the variables
 # sort(table(cleaned_data$Contract), decreasing = T)
@@ -121,6 +128,7 @@ cleaned_data <- cleaned_data %>%
   mutate(Supplier = clean_supplier_names(Supplier))
 
 ## Check variables
+# sort(table(cleaned_data$Buyer), decreasing = T)
 # sort(table(cleaned_data$Supplier), decreasing = T)
 # sort(table(cleaned_data$PreparatoryPhase), decreasing = T)
 # summary(cleaned_data$PreparatoryPhase)

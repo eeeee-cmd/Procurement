@@ -1,7 +1,7 @@
 #### Preamble ####
 # Purpose: This script loads the raw procurement buyer data from a CSV file for further analysis.
 # Author: Deyi Kong
-# Date: November 24th, 2024
+# Date: November 22th, 2024
 # Contact: deyi.kong@mail.utoronto.ca
 # License: MIT
 # Pre-requisites: The `tidyverse` package must be installed
@@ -10,5 +10,5 @@
 # load library
 library(readr)
 
-# Read the raw presidential polls data
+# Read the raw federal procurement data
 data <- read_csv(here::here("data/raw_data/procurement.csv"))

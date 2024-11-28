@@ -1,5 +1,5 @@
 ---
-title: "Procurement Dynamics: Analyzing Federal Contract Awards to Microsoft"
+title: "Procurement Dynamics: Analyzing Federal Contract Awards to Microsoft and Bell"
 subtitle: "Trends and Insights of Microsoft’s Future in Canadian Government from 2020"
 author: 
   - Deyi Kong
@@ -21,7 +21,7 @@ bibliography: references.bib
 
 # Install Packages if not downloaded:
 required_packages <- c(
-  "tidyverse", "sf", "here", "arrow", "ggplot2", "janitor", "purrr", "knitr", "kableExtra"
+  "tidyverse", "sf", "here", "arrow", "ggplot2", "janitor", "purrr", "knitr", "kableExtra", "modelsummary"
 )
 for (p in required_packages) {
   if (!require(p, character.only = TRUE)) {
@@ -40,6 +40,7 @@ library(janitor)
 library(purrr)
 library(knitr)
 library(kableExtra)
+library(modelsummary)
 
 # load data
 cleaned_data <- read_parquet(here::here("data/analysis_data/procurement_cleaned.parquet"))
@@ -136,13 +137,13 @@ In this analysis, several key predictors were identified to evaluate procurement
 
 # Summarize the data and filter buyers with counts >= 25
 summary_table <- cleaned_data %>%
-  group_by(Contract) %>%
+  group_by(ContractType) %>%
   summarise(
     Count = n(), 
     TotalAmount = sum(Amount),  # Calculate the total contract value
     AvgAmount = mean(Amount)    # Calculate the average contract value
   ) %>%
-  filter(Count > 25) %>%
+  filter(Count > 50) %>%
   arrange(desc(Count))  # Arrange in descending order based on Count
 
 # Format the TotalAmount column with dollar format
@@ -157,17 +158,17 @@ summary_table %>%
 
 ```
 
-**Buyer** is a character-type variable representing the federal government department or agency who initiate and award the contract. [@tbl-buyer] shows the top 10 buyer's name who has over 25 contracts with Microsoft, which identifies key partners and understand the distribution of contracts across sectors. The table highlights that Employment and Social Development Canada (ESDC) and National Defence account over 50% of Microsoft's total awards. [CALCULATED 52.02%, BUT THINKING IF THIS SHOULD BE ADDED TO THE TABLE]
+**Buyer** is a character-type variable representing the federal government department or agency who initiate and award the contract. [@tbl-buyer] shows the top 10 buyer's name who has over 50 contracts with Microsoft, which identifies key partners and understand the distribution of contracts across sectors. The table highlights that Employment and Social Development Canada (ESDC) and National Defence account over 50% of Microsoft's total awards. [CALCULATED 52.02%, BUT THINKING IF THIS SHOULD BE ADDED TO THE TABLE]
 
 ```{r}
 #| label: tbl-buyer
-#| tbl-cap: The table summarizes top 10 buyer's name who has over 25 contracts with Microsoft in total with contract count, total dollar amount, and average dollar amount per contract. 
+#| tbl-cap: The table summarizes top 10 buyer's name who has over 50 contracts with Microsoft in total with contract count, total dollar amount, and average dollar amount per contract. 
 #| echo: false
 #| eval: true
 #| warning: false
 #| message: false
 
-# Summarize the data and filter buyers with counts >= 25
+# Summarize the data and filter buyers with counts >= 50
 summary_table <- cleaned_data %>%
   group_by(Buyer) %>%
   summarise(
@@ -190,7 +191,7 @@ summary_table %>%
 
 ```
 
-**Supplier** is a character-type variable includes all the affiliated subsidiary companies of Microsoft. [@tbl-supplier] shows the top 5 buyer's name who has awarded over 25 contracts. [DELETE THIS VARIABLE? OR MAYBE MOVE IT TO APPDX.]
+**Supplier** is a character-type variable includes all the affiliated subsidiary companies of Microsoft. [@tbl-supplier] shows the top 5 buyer's name who has awarded over 50 contracts. [DELETE THIS VARIABLE? OR MAYBE MOVE IT TO APPDX.]
 
 ```{r}
 #| label: tbl-supplier
@@ -200,7 +201,7 @@ summary_table %>%
 #| warning: false
 #| message: false
 
-# Summarize the data and filter buyers with counts >= 25
+# Summarize the data and filter buyers with counts >= 50
 summary_table <- cleaned_data %>%
   group_by(Supplier) %>%
   summarise(
@@ -208,7 +209,7 @@ summary_table <- cleaned_data %>%
     TotalAmount = sum(Amount),  # Calculate the total contract value
     AvgAmount = mean(Amount)    # Calculate the average contract value
   ) %>%
-  filter(Count > 25) %>%
+  filter(Count > 50) %>%
   arrange(desc(Count))  # Arrange in descending order based on Count
 
 # Format the TotalAmount column with dollar format
@@ -284,7 +285,7 @@ To understand the factors influencing the amount of federal procurement contract
 
 This paper utilizes a linear regression model to examine the relationships between the dependent variable.
 
-$$Amount = \beta_0 + \beta_1 Contract + \beta_2 Buyer + \beta_3 ContractDays + \beta_4 PhaseDays + \epsilon$$
+$$Amount_i = \beta_0 + \beta_1 ContractType + \beta_2 Buyer + \beta_3 ContractDays + \beta_4 PhaseDays + \epsilon_i$$
 As defined in [@sec-data], each predictor variable has been chosen to reflect characteristics that influence the contract amount.
 
 ### Model Justification
@@ -304,6 +305,52 @@ While the model presented offers valuable insights into the dynamics of Microsof
 R-squared, adjusted R-squared 
 
 tests (e.g. VIF, AIC, BIC).
+
+```{r}
+#| label: tbl-keyestimates
+#| tbl-cap: Summary of key model estimates for Microsoft, including coefficients for predictors like xxxx, with standard errors for each estimate. Model performance statistics, such as sample size, R², and adjusted R², are also displayed.
+#| echo: false
+#| eval: true
+#| warning: false
+#| message: false
+
+# load data and model
+lm_model_m <- readRDS(here::here("models/lm_model_microsoft.rds"))
+# lm_model_b <- readRDS(here::here("models/lm_model_bell.rds"))
+
+# model_list <- list("Microsoft Model" = lm_model_m, "Bell Model" = lm_model_b)
+modelsummary(model_list, 
+             output = "kableExtra", 
+             statistic = "std.error", 
+             coef_map = c("ContractType" = "Contract Type", 
+                          "Buyer" = "Buyer", 
+                          "ContractDays" = "ContractDays",
+                          "PhaseDays" = "PhaseDays")) %>%
+  kable_styling(latex_options = c("striped", "scale_down"))
+```
+
+```{r}
+#| label: tbl-rfkeyestimates
+#| tbl-cap: Summary of key model estimates for Microsoft, including coefficients for predictors like xxxx, with standard errors for each estimate. Model performance statistics, such as sample size, R², and adjusted R², are also displayed.
+#| echo: false
+#| eval: true
+#| warning: false
+#| message: false
+
+# load data and model
+rf_model<- readRDS(here::here("models/rf_model.rds"))
+
+# Summary of the Random Forest model
+summary(rf_model)
+# Print the model summary
+print(rf_model)
+# Error rates
+rf_model$err.rate  # Error rates for each class (classification)
+# Access the OOB error rate
+rf_model$oob.times  # Times each observation was used in the model
+rf_model$oob.err    # Out-of-bag error estimate
+
+```
 
 # Results {#sec-result}
 

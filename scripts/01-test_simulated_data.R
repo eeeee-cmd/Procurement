@@ -22,14 +22,14 @@ test_results <- list()
 # test if the data structure is correct
 test_results$structure <- test_that("Data structure", {
   expect_true(is.data.frame(data), info = "procurement_data is not a data frame.")
-  expect_equal(ncol(data), 9, info = "procurement_data does not have the correct number of columns.")
+  expect_equal(ncol(data), 10, info = "procurement_data does not have the correct number of columns.")
   expect_equal(nrow(data), 100, info = "procurement_data does not have the correct number of rows.")
 })
 
 # test if the column names match the expected column names
 test_results$column_names <- test_that("Column names", {
   expected_colnames <- c(
-    "contract", "buyer", "supplier", "amount", "award_date", "start_date", "end_date", "preparatory_phase", "contract_days"
+    "contract", "buyer", "supplier", "amount", "award_date", "start_date", "end_date", "preparatory_phase", "contract_days", "phase_days"
   )
   expect_equal(colnames(data), expected_colnames, info = "Column names do not match expected names.")
 })

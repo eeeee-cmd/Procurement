@@ -1,7 +1,7 @@
 #### Preamble ####
 # Purpose: Simulate data 
 # Author: Deyi Kong
-# Date: November 25th, 2024
+# Date: November 28th, 2024
 # Contact: deyi.kong@mail.utoronto.ca
 # License: MIT
 # Pre-requisites: The `tidyverse` package must be installed
@@ -15,9 +15,9 @@ library(arrow)
 set.seed(123)
 
 # define possible values to simulate data
-contract <- c("License/Maintenance fees", "Computer services", "Consultants", "Application software", "Production and operations")
-buyer <- c("Employment and Social Development Canada", "Global Affairs Canada", "National Defence", "Fisheries and Oceans Canada")
-supplier <- c("MICROSOFT CANADA INC.", "MICROSOFT CORPORATION", "MICROSOFT CANADA CO.")
+contract <- c("License/Maintenance fees", "Communication Services", "Computer Services", "Application software", "Production and operations")
+buyer <- c("Shared Services Canada", "Employment and Social Development Canada", "Royal Canadian Mounted Police", "Global Affairs Canada", "National Defence")
+supplier <- c("MICROSOFT CANADA INC.", "BELL TELEPHONE CO. OF CANADA", "MICROSOFT CANADA CO.", "BELL CANADA")
 n <- 100
 
 # generate random start and end dates for each poll
@@ -36,7 +36,10 @@ procurement_data <- data.frame(
   end_date = end_dates,
   preparatory_phase = as.numeric(start_dates - award_dates),
   contract_days = as.numeric(end_dates - start_dates)
-)
+) %>%
+  mutate(
+    phase_days = abs(preparatory_phase)
+  )
 
 # write the cleaned and simulated polling data to a CSV file
 write_csv(procurement_data, here::here("data/simulated_data/simulated_data.csv"))

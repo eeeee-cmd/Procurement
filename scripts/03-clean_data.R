@@ -2,26 +2,21 @@
 # Purpose: This script reads and cleans raw procurement data,
 # performing various transformations, and outputs the cleaned data to a CSV file.
 # Author: Deyi Kong
-# Date: November 28th, 2024
+# Date: December 2nd, 2024
 # Contact: deyi.kong@mail.utoronto.ca
 # License: MIT
 # Pre-requisites: The `tidyverse`, 'here', and 'arrow' packages must be installed
 # Any other information needed? Make sure you are in the `Procurement` rproj
 
 # load libraries
+library(dplyr)
 library(tidyverse)
 library(here)
 library(arrow)
+library(lubridate)
 
 # Read data
-microsoft_data <- read_csv(here::here("data/raw_data/procurement_microsoft.csv"))
-# bell_data <- read_csv(here::here("data/raw_data/procurement_bell.csv"))
-# 
-# # Combine data
-# data <- rbind(microsoft_data, bell_data)
-
-
-data <- microsoft_data
+data <- read_csv(here::here("data/raw_data/procurement_microsoft.csv"))
 
 # # Check if the contract region are all federal, then we will exclude it from the cleaned data
 # table(data$region)
@@ -49,13 +44,6 @@ cleaned_data <- tryCatch(
         EndDate = end_date
       ) %>%
       mutate(
-        # To replace missing (NA) start date with the value of awarded date column
-        StartDate = case_when(
-          is.na(StartDate) ~ AwardDate,
-          TRUE ~ StartDate
-        )
-      ) %>%
-      mutate(
         # Specify the format of the date for proper parsing
         StartDate = mdy(StartDate), # Use mdy() for MM/DD/YYYY format
         AwardDate = mdy(AwardDate), 
@@ -68,7 +56,9 @@ cleaned_data <- tryCatch(
       # Drop contracts where EndDate is before StartDate or AwardDate due to error with unknown reason
       filter(!(EndDate <= StartDate | EndDate <= AwardDate)) %>%
       # Drop Na for amount
-      filter(!is.na(Amount))
+      filter(!is.na(Amount) & !is.na(StartDate)) %>%
+      # drop the significant large contract
+      filter(Amount != 102260150)
   }, # error handling to mitigate any cleaning issues
   error = function(e) {
     message("An error occurred during data cleaning: ", e)
@@ -85,107 +75,61 @@ cleaned_data <- cleaned_data %>%
     ) %>%
   # Filter out the contracts before 2020
   mutate(
-    Year = as.integer(format(as.Date(AwardDate), "%Y"))
+    Year = as.integer(format(as.Date(AwardDate), "%Y")),
+    Month = as.integer(format(as.Date(AwardDate), "%m"))
     ) %>%
-  filter(Year != 2019) %>%
-  select(-Year)  # Remove Year column after filtering
+  filter(Year != 2019)
 
 # # Summary all the variables
 # sort(table(cleaned_data$Buyer), decreasing = T)
 # sort(table(cleaned_data$Supplier), decreasing = T)
-# summary(cleaned_data)
+ summary(cleaned_data)
 
-# # Standardize the supplier's name due to capitalization and notation differences
-# # Remove all spaces first
-# cleaned_data$Supplier <- toupper(gsub("\\s+", "", cleaned_data$Supplier))
-# 
-# # Remove unnecessary symbols
-# cleaned_data$Supplier <- gsub("[.,]", "", cleaned_data$Supplier)
-# 
-# # Define a custom function for substitutions
-# clean_supplier_names <- function(supplier) {
-#   substitutions <- c(
-#     "MICROSOFT" = "Microsoft",
-#     "BELL" = "Bell",
-#     "CANADA" = " Canada",
-#     "TELEPHONE" = " Telephone",
-#     "LICENSING" = " Licensing",
-#     "CORPORATION" = " Corp.",
-#     "CORP" = " Corp.",
-#     "COMPANY" = " Co.",
-#     "CO" = " Co.",
-#     "INC" = " Inc.",
-#     "LTD" = " Ltd.",
-#     "MOBILITÉ" = " Mobility",
-#     "MIICROSOFT" = "Microsoft",
-#     "LICENCING" = " Licensing",
-#     "THEBell" = "Bell",
-#     "CANAD" = " Canada",
-#     "MEDIA Inc." = "MEDIA",
-#     "MEDIA" = " Media Inc.",
-#     "MOBILITY" = " Mobility",
-#     "DISTRIBUTION" = " Distribution",
-#     "ALIANT" = " Aliant",
-#     "REGIONAL" = " Regional",
-#     "EXPRESSVU" = " Express VU",
-#     "THROUGHSOFTCHOICE/SSC" = "Through softchoice/SSC",
-#     "THROUGHSSC" = "Through softchoice/SSC",
-#     "\\( Telephone-NORTHYORK\\)" = " Telephone",
-#     "MTS-WINNIPEGMAN" = "BellMTS",
-#     "BellMTS Inc." = "BellMTS",
-#     "MTS Inc." = "BellMTS",
-#     "MTS" = " MTS Inc.",
-#     "GP" = ", GP",
-#     "GIP" = ", GIP",
-#     "WIRELESS" = " Wireless",
-#     ".-TORONTO-POBOX9433" = ".",
-#     "OF Canada" = "OF",
-#     "OF" = " of Canada",
-#     "Canada-OTTAWAON" = "Canada",
-#     "CANAADA" = " Canada",
-#     "Inc. Co.MMUNICATIONS Inc." = "Inc."
-#   )
-#   for (pattern in names(substitutions)) {
-#     supplier <- gsub(pattern, substitutions[pattern], supplier)
-#   }
-#   return(supplier)
-# }
-# 
-# # Apply the function to clean supplier names
-# cleaned_data <- cleaned_data %>%
-#   mutate(Supplier = clean_supplier_names(Supplier))
-#
+# Standardize the supplier's name due to capitalization and notation differences
+# Remove all spaces first
+cleaned_data$Supplier <- toupper(gsub("\\s+", "", cleaned_data$Supplier))
+
+# Remove unnecessary symbols
+cleaned_data$Supplier <- gsub("[.,]", "", cleaned_data$Supplier)
+
+# Define a custom function for substitutions
+clean_supplier_names <- function(supplier) {
+  substitutions <- c(
+    "MICROSOFT" = "Microsoft",
+    "CANADA" = " Canada",
+    "LICENSING" = " Licensing",
+    "CORPORATION" = " Corp.",
+    "CORP" = " Corp.",
+    "COMPANY" = " Co.",
+    "CO" = " Co.",
+    "INC" = " Inc.",
+    "LTD" = " Ltd.",
+    "MIICROSOFT" = "Microsoft",
+    "LICENCING" = " Licensing",
+    "CANAD" = " Canada",
+    "THROUGHSOFTCHOICE/SSC" = "Through softchoice/SSC",
+    "THROUGHSSC" = "Through softchoice/SSC",
+    "GP" = ", GP",
+    "GIP" = ", GIP",
+    ".-TORONTO-POBOX9433" = ".",
+    "OF Canada" = "OF",
+    "OF" = " of Canada",
+    "Canada-OTTAWAON" = "Canada",
+    "CANAADA" = " Canada"
+  )
+  for (pattern in names(substitutions)) {
+    supplier <- gsub(pattern, substitutions[pattern], supplier)
+  }
+  return(supplier)
+}
+
+# Apply the function to clean supplier names
+cleaned_data <- cleaned_data %>%
+  mutate(Supplier = clean_supplier_names(Supplier))
+
 # # Check variables
 # sort(table(cleaned_data$Supplier), decreasing = T)
 # summary(cleaned_data)
-
-# 
-# Separate Microsoft and Bell based on keywords
-cleaned_data <- cleaned_data %>%
-  mutate(
-    Supplier = case_when( 
-      grepl("Microsoft", cleaned_data$Supplier) ~ "Microsoft", 
-      grepl("MIICROSOFT", cleaned_data$Supplier) ~ "Microsoft", 
-      grepl("MICROSOFT", cleaned_data$Supplier) ~ "Microsoft", 
-      grepl("BELL", cleaned_data$Supplier) ~ "Bell", 
-      grepl("Bell", cleaned_data$Supplier) ~ "Bell", 
-      grepl("bell", cleaned_data$Supplier) ~ "Bell",
-      grepl("MTS", cleaned_data$Supplier) ~ "Bell",
-      TRUE ~ cleaned_data$Supplier
-    )) %>%
-  mutate(
-    Buyer = case_when( 
-      grepl("Employment and Social Development Canada", cleaned_data$Buyer) ~ "Employment and Social Development Canada", 
-      grepl("Global Affairs Canada", cleaned_data$Buyer) ~ "Global Affairs Canada", 
-      grepl("MICROSOFT", cleaned_data$Buyer) ~ "Microsoft", 
-      grepl("National Defence", cleaned_data$Buyer) ~ "National Defence", 
-      grepl("Natural Resources Canada", cleaned_data$Buyer) ~ "Natural Resources Canada", 
-      grepl("Transport Canada", cleaned_data$Buyer) ~ "Transport Canada",
-      grepl(" Indigenous Services Canada", cleaned_data$Buyer) ~ " Indigenous Services Canada",
-      TRUE ~ "Other"
-    ))
-# # Check contractrs
-# sort(table(cleaned_data$Supplier), decreasing = T)
 
 # Categorize based on keywords
 cleaned_data <- cleaned_data %>%
@@ -226,21 +170,25 @@ cleaned_data <- cleaned_data %>%
       grepl("SOFTWARE", cleaned_data$Contract) ~ "Software Related",
       grepl("software", cleaned_data$Contract) ~ "Software Related",
       TRUE ~ "Other"
-      ))
+      )) %>%
+  mutate(
+    BuyerCleaned = case_when( 
+      grepl("Employment and Social Development Canada", cleaned_data$Buyer) ~ "Employment and Social Development Canada", 
+      grepl("Global Affairs Canada", cleaned_data$Buyer) ~ "Global Affairs Canada", 
+      grepl("National Defence", cleaned_data$Buyer) ~ "National Defence", 
+      grepl("Natural Resources Canada", cleaned_data$Buyer) ~ "Natural Resources Canada",
+      grepl("National Research Council Canada", cleaned_data$Buyer) ~ "National Research Council Canada",  
+      grepl("Transport Canada", cleaned_data$Buyer) ~ "Transport Canada",
+      grepl("Indigenous Services Canada", cleaned_data$Buyer) ~ "Indigenous Services Canada",
+      grepl("Natural Sciences and Engineering Research Council of Canada", cleaned_data$Buyer) ~ "Natural Sciences and Engineering Research Council of Canada",  
+      grepl("Shared Services Canada", cleaned_data$Buyer) ~ "Shared Services Canada",  
+      grepl("Social Sciences and Humanities Research Council of Canada", cleaned_data$Buyer) ~ "Social Sciences and Humanities Research Council of Canada",  
+      grepl("Health Canada", cleaned_data$Buyer) ~ "Health Canada",
+      TRUE ~ "Other"
+    ))
 
 # # Check contractrs
 # sort(table(cleaned_data$ContractType), decreasing = T)
-
-# # Subset data for Bell and Microsoft
-# bell_buyers <- unique(cleaned_data$Buyer[cleaned_data$Supplier == "Bell"])
-# microsoft_buyers <- unique(cleaned_data$Buyer[cleaned_data$Supplier == "Microsoft"])
-# # Find common buyers
-# common_buyers <- intersect(bell_buyers, microsoft_buyers)
-# # Keep the data only with common buyers
-# cleaned_data <- cleaned_data %>%
-#   filter(Buyer %in% common_buyers)
-
-# sort(table(cleaned_data$Buyer), decreasing = T)
 
 # Save cleaned data as new csv and parquet if successful, print error if not
 if (!is.null(cleaned_data)) {

@@ -1,12 +1,12 @@
 ---
-title: "Procurement Dynamics: Analyzing Federal Contract Awards to Microsoft and Bell"
-subtitle: "Trends and Insights of Microsoft’s Future in Canadian Government from 2020"
+title: "Procurement Dynamics: Analyzing Federal Contract Awards to Microsoft"
+subtitle: "Trends of Microsoft’s Future in Canadian Government from 2020"
 author: 
   - Deyi Kong
 thanks: "Code and data are available at: [https://github.com/eeeee-cmd/Procurement/](https://github.com/eeeee-cmd/Procurement/)."
 date: today
 date-format: long
-abstract: "This paper analyzes the federal procurement contracts awarded to Microsoft, focusing on trends in award values, contract categories, and the relationships between buyers and Microsoft. The analysis reveals that Microsoft dominates high-value contracts and demonstrates consistent partnerships with key government departments. This paper utilizes a linear model to predict the future contract amount trend for Microsoft. By examining these procurement dynamics, this paper providing insights into the broader implications of tech-industry participation in government procurement."
+abstract: "This paper analyzes the federal procurement contracts awarded to Microsoft, focusing on trends in award values, contract categories, and the relationships between buyers and Microsoft. The analysis reveals that Microsoft dominates high-value contracts and demonstrates consistent partnerships with key government departments. This paper utilizes a linear model and random forest to predict the future contract amount trend for Microsoft. By examining these procurement dynamics, this paper providing insights into the broader implications of tech-industry participation in government procurement."
 format: pdf
 toc: true
 toc-depth: 3
@@ -41,6 +41,9 @@ library(purrr)
 library(knitr)
 library(kableExtra)
 library(modelsummary)
+library(ggcorrplot)
+library(gridExtra)
+library(rstanarm)
 
 # load data
 cleaned_data <- read_parquet(here::here("data/analysis_data/procurement_cleaned.parquet"))
@@ -52,7 +55,7 @@ Government procurement serves as a critical avenue for public sector innovation,
 
 This paper addresses this gap by conducting a detailed analysis of federal procurement contracts awarded to Microsoft between 2020 and September 2024. Using publicly available data from the Investigative Journalism Foundation, the study explores trends in contract values, contract types, and Microsoft’s relationships with key government buyers. Emphasis is placed on identifying patterns in contract allocation and the implications of Microsoft's dominance in high-value contracts.
 
-The main estimand in this study is the amount of federal procurement contracts awarded to Microsoft. This metric is analyzed across multiple dimensions, including contract categories, durations, and partnerships, to quantify Microsoft's role in federal procurement comprehensively. The findings reveal that Microsoft plays a dominant role in IT infrastructure and modernization, securing the majority of high-value contracts and establishing consistent partnerships with departments such as Employment and Social Development Canada and National Defence. These insights highlight the broader implications of the private tech sector’s influence on public sector procurement, raising questions about competitiveness, dependency, and strategic alignment.
+The main estimand in this study is the amount of federal procurement contracts awarded to Microsoft. This metric is analyzed across multiple dimensions, including contract categories, duration, and partnerships, to quantify Microsoft's role in federal procurement comprehensively. The findings reveal that Microsoft plays a dominant role in IT infrastructure and modernization, securing the majority of high-value contracts and establishing consistent partnerships with departments such as Employment and Social Development Canada and National Defence. These insights highlight the broader implications of the private tech sector’s influence on public sector procurement, raising questions about competitiveness, dependency, and strategic alignment.
 
 This study contributes to understand the procurement landscape, providing valuable information for policymakers, industry stakeholders, and academics. It underscores the importance of transparency, strategic planning, and balancing innovation with equity in government contracts.
 
@@ -80,7 +83,7 @@ After imported the raw dataset using `read_csv` function, I first select specifi
 
 For any missing data (NA) of StartDate, I infer the StartDate from the AwardDate to replace the missing value as the value of AwardDate. Then I standardize the date format of all date related datas for proper parsing by using `mdy()` function and change the dollar format of amount into numeric numbers for future calculation purposes. Due to the error with unknown reason that EndDate is before StartDate or AwardDate, those entries were excluded from this paper. 
 
-PreparatoryPhase, PhaseDays, and ContractDays variables were created for the purpose of analyzing preparatory phase and performance phase corresponding to each contract. PreparatoryPhase calculates the days from AwardDate to StartDate. ContractDays calculates the days from StartDate to EndDate. PhaseDays take the absolute value of PreparatoryPhase because of the minor effect of either prepare before contract being awarded or prepare after contract being awarded.
+PreparatoryPhase, PhaseDays, and ContractDays variables were created for the purpose of analyzing preparatory phase and performance phase corresponding to each contract. PreparatoryPhase calculates the days from AwardDate to StartDate. ContractDays calculates the days from StartDate to EndDate. PhaseDays take the absolute value of PreparatoryPhase because of the minor effect of either prepare before contract being awarded or prepare after contract being awarded. Last but not least, I created a new variable called ContractType, which categorizes the contracts based on keywords.
 
 This dataset contains only two entries for 2019 federal procurement contracts awarded to Microsoft. So, I filter out the contracts before 2020 to focus on the records between 2020 and September 2024 as desired. Then I check the character type variables, Supplier and Contract, using `table()` function for the purpose of manipulating input error. I standardize the supplier's name which combine the similar name due to capitalization or some notation differences, and format them with first letter of each word capitalized.
 
@@ -125,7 +128,7 @@ ggplot(yearly_amount, aes(x = as.factor(Year), y = TotalAmount)) +
 
 ## Predictor Variables
 
-In this analysis, several key predictors were identified to evaluate procurement data effectively. The first variable, **Contract**, is a character-type variable that identifies each procurement contract awarded to Microsoft. [@tbl-contract] [SOME MODIFICATION OF CONTRACT CATEGORIES CLEANING PROCESS MAY APPLY]
+In this analysis, several key predictors were identified to evaluate procurement data effectively. The first variable, **ContractType**, is a character-type variable that identifies each procurement contract awarded to Microsoft into Categories. [@tbl-contract]
 
 ```{r}
 #| label: tbl-contract
@@ -143,7 +146,7 @@ summary_table <- cleaned_data %>%
     TotalAmount = sum(Amount),  # Calculate the total contract value
     AvgAmount = mean(Amount)    # Calculate the average contract value
   ) %>%
-  filter(Count > 50) %>%
+  filter(Count > 25) %>%
   arrange(desc(Count))  # Arrange in descending order based on Count
 
 # Format the TotalAmount column with dollar format
@@ -162,13 +165,13 @@ summary_table %>%
 
 ```{r}
 #| label: tbl-buyer
-#| tbl-cap: The table summarizes top 10 buyer's name who has over 50 contracts with Microsoft in total with contract count, total dollar amount, and average dollar amount per contract. 
+#| tbl-cap: The table summarizes top 10 buyer's name who has over 25 contracts with Microsoft in total with contract count, total dollar amount, and average dollar amount per contract. 
 #| echo: false
 #| eval: true
 #| warning: false
 #| message: false
 
-# Summarize the data and filter buyers with counts >= 50
+# Summarize the data and filter buyers with counts >= 25
 summary_table <- cleaned_data %>%
   group_by(Buyer) %>%
   summarise(
@@ -176,7 +179,7 @@ summary_table <- cleaned_data %>%
     TotalAmount = sum(Amount),  # Calculate the total contract value
     AvgAmount = mean(Amount)    # Calculate the average contract value
   ) %>%
-  filter(Count > 25) %>%
+  filter(Count > 15) %>%
   arrange(desc(Count))  # Arrange in descending order based on Count
 
 # Format the TotalAmount column with dollar format
@@ -188,38 +191,6 @@ summary_table %>%
   kable(col.names = c("Buyer", "Contract", "Total Amount", "Average")) %>%
   kable_styling(full_width = F, position = "center", bootstrap_options = c("striped", "hover")) %>%
   column_spec(1, width = "22em")  # Set column width to wrap text
-
-```
-
-**Supplier** is a character-type variable includes all the affiliated subsidiary companies of Microsoft. [@tbl-supplier] shows the top 5 buyer's name who has awarded over 50 contracts. [DELETE THIS VARIABLE? OR MAYBE MOVE IT TO APPDX.]
-
-```{r}
-#| label: tbl-supplier
-#| tbl-cap: The table summarizes the main Microsoft supplier's name who has over 25 contracts with buyers in total with contract count, total dollar amount, and average dollar amount per contract. 
-#| echo: false
-#| eval: true
-#| warning: false
-#| message: false
-
-# Summarize the data and filter buyers with counts >= 50
-summary_table <- cleaned_data %>%
-  group_by(Supplier) %>%
-  summarise(
-    Count = n(), 
-    TotalAmount = sum(Amount),  # Calculate the total contract value
-    AvgAmount = mean(Amount)    # Calculate the average contract value
-  ) %>%
-  filter(Count > 50) %>%
-  arrange(desc(Count))  # Arrange in descending order based on Count
-
-# Format the TotalAmount column with dollar format
-summary_table$TotalAmount <- scales::label_dollar()(summary_table$TotalAmount)
-summary_table$AvgAmount <- scales::label_dollar()(summary_table$AvgAmount)
-
-# Display the summary table using kableExtra for nicer formatting
-summary_table %>%
-  kable(col.names = c("Suppllier", "Contract", "Total Amount", "Average")) %>%
-  kable_styling(full_width = F, position = "center", bootstrap_options = c("striped", "hover"))
 
 ```
 
@@ -277,82 +248,103 @@ ggplot(cleaned_data, aes(x = ContractDays)) +
   theme_minimal()
 ```
 
-# Model
+```{r}
+#| label: fig-cor
+#| fig-cap: This correlation matrix visualizes the relationships between key numerical predictor variables and the outcome variable, Amount. The figure shows correlations include a weak negative correlations between PreparatoryPhase and ContractDays; and weak positive correlations between predictors and Amount.
+#| echo: false
+#| eval: true
+#| warning: false
+#| message: false
 
-To understand the factors influencing the amount of federal procurement contracts awarded to Microsoft. I construct a linear regression model to explains variations in contract values.
+# filter to numerical predictor variables
+numerical_data <- cleaned_data %>%
+  select(Amount, PreparatoryPhase, ContractDays)
+
+correlation_matrix <- cor(numerical_data, use = "complete.obs")
+
+# create correlation matrix
+ggcorrplot(correlation_matrix, lab = TRUE) + 
+  theme(
+    axis.text.x = element_text(size = 10),  # Adjust x-axis text size
+    axis.text.y = element_text(size = 10) # Adjust y-axis text size
+  )
+```
+
+```{r}
+#| label: fig-box
+#| fig-cap: The Boxplots shows the relationship of ContractDays and PhaseDays with ContractType. 
+#| fig-subcap: ["Contract Duration in each Contract Type","Phase Duration in each Contract Type"]
+#| echo: false
+#| warning: false
+#| layout-nrow: 2
+
+# Clean and transform the data
+data <- cleaned_data %>%
+  mutate(
+    ContractType = gsub("Related", "", ContractType), # Remove "Related"
+    ContractType = str_wrap(gsub("/", " or ", ContractType), width = 10) # Wrap long labels
+  )
+
+# First graph: ContractType vs. ContractDays
+ggplot(data, aes(x = ContractType, y = ContractDays)) +
+  geom_boxplot() +
+  theme_minimal() +
+  labs(x = "Contract Type", y = "Contract Duration") +
+  theme(axis.text.x = element_text(size = 6))
+
+# Second graph: ContractType vs. PhaseDays
+ggplot(data, aes(x = ContractType, y = PhaseDays)) +
+  geom_boxplot() +
+  theme_minimal() +
+  labs(x = "Contract Type", y = "Phase Duration") +
+  theme(axis.text.x = element_text(size = 6))
+
+```
+
+# Model
 
 ## Model Set-Up {#sec-modset}
 
-This paper utilizes a linear regression model to examine the relationships between the dependent variable.
+This paper utilizes a Bayesian model to examine the factors influencing the dollar amount of federal procurement contracts awarded to Microsoft. Define $Amount_i$ as the dollar amount of the federal procurement contract awarded to Microsoft and $\mu_i$ is the expected value of the contract amount modeled as a linear combination of the predictors. The model for predicting $Amount_i$ is specified as follows:
+\begin{align*} 
+Amount_i \mid \mu_i, \sigma &\sim \text{Normal}(\mu_i, \sigma)\\
+\mu_i &= \alpha + \beta_1 \cdot \text{ContractType}_i + \beta_2 \cdot \text{Buyer}_i + \beta_3 \cdot \text{ContractDays}_i + \beta_4 \cdot \text{PhaseDays}_i \\
+\alpha &\sim \text{Normal}(0, 2) \\
+\beta_1, \beta_2, \beta_3, \beta_4 &\sim \text{Normal}(0, 2) \\
+\sigma &\sim \text{Exponential}(1)
+\end{align*}
+Where:\
+- $\alpha$ is the intercept term.\
+- $\beta_1, \beta_2, \beta_3, \beta_4$ are the coefficients associated with the predictors:\
+  - $ContractType_i$: A categorical variable representing the contract type.\
+  - $Buyer_i$: A categorical variable representing the buyer of the contract.\
+  - $ContractDays_i$: A numeric variable representing the duration of the contract is active.\
+  - $PhaseDays_i$: A numeric variable representing the days between AwardDate and StartDate.
 
-$$Amount_i = \beta_0 + \beta_1 ContractType + \beta_2 Buyer + \beta_3 ContractDays + \beta_4 PhaseDays + \epsilon_i$$
-As defined in [@sec-data], each predictor variable has been chosen to reflect characteristics that influence the contract amount.
+The model is fit using the `rstanarm` package of @rstanarm in R [@citeR], with the specified priors guiding the model while allowing it to adapt to the data.
 
 ### Model Justification
-We expect a positive relationship between the size of the wings and time spent aloft. In particular...
+This paper expect that the factors - such as ContractType, Buyer, ContractDays and PhaseDays - will influence the outcome of contract amount. In particular, ...
 
-We can use maths by including latex between dollar signs, for instance $\theta$.
+In this paper, I compared three different modeling approaches to examine the factors influencing the federal procurement contract amount: linear regression, random forest, and Bayesian regression. Each of these models offers different advantages and trade-offs. More detailed justification about model selection will be discussed in [@sec-discussion]. The Bayesian model is selected due to better performance and flexibility.
 
+Bayesian approach can explicitly model uncertainty by incorporating prior knowledge and provides a full posterior distribution of the model parameters. This is useful when the data is sparse and prior knowledge about the contract types, buyers, or duration is available. The linear regression structure was selected due to its simplicity and interpretability. The numeric dependent variable, $Amount_i$, gives a chance of linear regression for modeling the relationship between the contract amount and its predictors. 
+
+By including weakly informative priors for the coefficients and residual standard deviation, the model remains flexible and interpretable, while still preventing extreme parameter estimates. The use of an exponential prior for $\sigma$ allows the model to adapt a scale of residuals in the data, providing estimates of the variance. The normal prior for the coefficients $\beta_1, \beta_2, \beta_3, \beta_4$ with mean 0 and standard deviation 2 shows the expectation that the coefficients should not be too larg but flexible enough to adapt the data.
+
+This Bayesian linear regression model balances complexity with interpretability, and its flexibility allows us to draw meaningful observations from the data while quantifying uncertainty around the estimates, especially when the sample size is not large or when the predictors have a complex relationship with the outcome. [TOO GENERAL, CHANGE]
 
 ## Assumptions and Limitations
 
-The model takes several assumptions, including the relationship between the predictors and the outcome is linear, each contract is independent, the variance of the error term is constant, and predictor variables are not highly correlated with each other.
+The model takes several assumptions, including linear relationship between predictors, normality of the residuals, independence of observations, homoscedasticity, and reasonable chosen priors.
 
-While the model presented offers valuable insights into the dynamics of Microsoft’s federal procurement contracts, there are some limitations including categorization of contract types, generalizability, data quality, potential for endogeneity, and unobserved variables. These limitations will be discussed in [@sec-discussion].
+While the model presents some valuable observations of Microsoft’s federal procurement contracts, there are some model limitations including prior function selection, data quality, potential for endogeneity, generalizability, and unobserved variables. These limitations will be discussed more detailed in [@sec-discussion].
 
-## Model Validation [REMOVE?]
-
-R-squared, adjusted R-squared 
-
-tests (e.g. VIF, AIC, BIC).
-
-```{r}
-#| label: tbl-keyestimates
-#| tbl-cap: Summary of key model estimates for Microsoft, including coefficients for predictors like xxxx, with standard errors for each estimate. Model performance statistics, such as sample size, R², and adjusted R², are also displayed.
-#| echo: false
-#| eval: true
-#| warning: false
-#| message: false
-
-# load data and model
-lm_model_m <- readRDS(here::here("models/lm_model_microsoft.rds"))
-# lm_model_b <- readRDS(here::here("models/lm_model_bell.rds"))
-
-# model_list <- list("Microsoft Model" = lm_model_m, "Bell Model" = lm_model_b)
-modelsummary(model_list, 
-             output = "kableExtra", 
-             statistic = "std.error", 
-             coef_map = c("ContractType" = "Contract Type", 
-                          "Buyer" = "Buyer", 
-                          "ContractDays" = "ContractDays",
-                          "PhaseDays" = "PhaseDays")) %>%
-  kable_styling(latex_options = c("striped", "scale_down"))
-```
-
-```{r}
-#| label: tbl-rfkeyestimates
-#| tbl-cap: Summary of key model estimates for Microsoft, including coefficients for predictors like xxxx, with standard errors for each estimate. Model performance statistics, such as sample size, R², and adjusted R², are also displayed.
-#| echo: false
-#| eval: true
-#| warning: false
-#| message: false
-
-# load data and model
-rf_model<- readRDS(here::here("models/rf_model.rds"))
-
-# Summary of the Random Forest model
-summary(rf_model)
-# Print the model summary
-print(rf_model)
-# Error rates
-rf_model$err.rate  # Error rates for each class (classification)
-# Access the OOB error rate
-rf_model$oob.times  # Times each observation was used in the model
-rf_model$oob.err    # Out-of-bag error estimate
-
-```
 
 # Results {#sec-result}
+
+## Data
+
 
 ```{r}
 #| label: fig-date
@@ -365,29 +357,27 @@ rf_model$oob.err    # Out-of-bag error estimate
 # Create a new variable for "four-month periods"
 data <- cleaned_data %>%
   mutate(
-    Year = year(AwardDate),
-    Month = month(AwardDate),
     Period = case_when(
       Month %in% 1:4 ~ "Jan-Apr",
       Month %in% 5:8 ~ "May-Aug",
       Month %in% 9:12 ~ "Sep-Dec"
-    ),
-    YearPeriod = paste(Year, Period, sep = "-")  # Combine Year and Period
+      )
   )
 
 # Count the number of contracts in each four-month period
 contract_counts <- data %>%
-  group_by(YearPeriod) %>%
+  group_by(Period) %>%
   summarise(Count = n())
 
 # Heatmap plot
-ggplot(contract_counts, aes(x = YearPeriod, y = Count, fill = Count)) +
+ggplot(contract_counts, aes(x = Period, y = Count, fill = Count)) +
   geom_tile() +
-  scale_fill_gradient(low = "white", high = "red") +
+  scale_fill_gradient(low = "lightblue", high = "darkblue") +
   labs(x = "Year-Period", y = "Frequency (Contract Count)", title = "Heatmap of Contracts by Four-Month Periods") +
   theme_minimal() +
   theme(axis.text.y = element_text(angle = 0))  # Keep y-axis labels readable
 ```
+
 
 ```{r}
 #| label: fig-mobilization
@@ -403,7 +393,6 @@ ggplot(data, aes(x = AwardDate, y = StartDate)) +
   theme(legend.position = "none")  # This removes the legend
 ```
 
-
 ```{r}
 #| label: fig-performance
 #| fig-cap: The scatter plot shows ....
@@ -417,6 +406,49 @@ ggplot(data, aes(x = StartDate, y = EndDate)) +
   labs(x = "Start Date", y = "End Date", title = "Start Date vs End Date") +
   theme(legend.position = "none")  # This removes the legend
 ```
+
+## Model
+R-squared, adjusted R-squared 
+
+tests (e.g. VIF, AIC, BIC).
+
+
+Our results are summarized in @tbl-modelresults.
+
+```{r}
+#| echo: false
+#| eval: true
+#| warning: false
+#| message: false
+
+bayesian_model <-
+  readRDS(file = here::here("models/bayesian_model.rds"))
+```
+
+```{r}
+#| label: tbl-modelresults
+#| echo: false
+#| eval: true
+#| tbl-cap: "Explanatory models of contract amount based on ContractType, Buyer, ContractDays, PhaseDays and Month"
+#| warning: false
+#| message: false
+
+# Generate the model summary
+
+bayesian_model_full <- readRDS(here::here("models/bayesian_model_full.rds"))
+bayesian_model <- readRDS(here::here("models/bayesian_model.rds"))
+
+model_list <- list("Bayesian Model_Full" = bayesian_model_full, "Bayesian Model" = bayesian_model)
+
+modelsummary(
+  model_list,
+  output = "kableExtra", 
+  coef_map = c("ContractType" = "ContractType", "Buyer" = "Buyer", 
+               "ContractDays" = "ContractDays", "PhaseDays" = "PhaseDays")
+) %>%
+  kable_styling(latex_options = c("striped", "scale_down"))
+```
+
 
 
 \newpage
@@ -437,6 +469,9 @@ The model assumes a linear relationship between the independent variables and th
 
 There may be issues of endogeneity, where causality runs in both directions between some predictors and the outcome variable. The amount of procurement from a buyer may influence the allocation of future budgets to that department, which in turn affects future contract amounts awarded to Microsoft. This reciprocal relationship could introduce bias in the coefficient estimates if not properly addressed.
 
+## Model Selection
+
+
 ## Weaknesses and Next Steps
 
 This paper provides a foundation for a deeper understanding of federal contract awards to Microsoft, but it also suggests several directions for future exploration. First, the study can expand to include comparisons with other major suppliers. By examining whether Microsoft's procurement trends are unique or reflective of broader patterns across industries. This gives a better understanding on assess whether certain dynamics are systemic within federal contracting practices.
@@ -445,13 +480,197 @@ Data quality and consistency issues are also of concern. The anomalies identifie
 
 \newpage
 
-# Appendix {#sec-appx}
+\appendix
 
-## Methodology
+# Appendix {-}
+
+
+# Additional data details
+
+# Model details {#sec-model-details}
+
+## Bayesian Model
+
+### Posterior predictive check
+
+In @fig-ppcheckandposteriorvsprior-1 we implement a posterior predictive check. This shows...
+
+In @fig-ppcheckandposteriorvsprior-2 we compare the posterior with the prior. This shows... 
+
+```{r}
+#| eval: true
+#| echo: false
+#| message: false
+#| warning: false
+#| label: fig-ppcheckandposteriorvsprior
+#| layout-ncol: 2
+#| fig-cap: "Examining how the model fits, and is affected by, the data"
+#| fig-subcap: ["Posterior prediction check", "Comparing the posterior with the prior"]
+
+pp_check(bayesian_model) +
+  theme_classic() +
+  theme(legend.position = "bottom")
+
+posterior_vs_prior(bayesian_model) +
+  theme_minimal() +
+  scale_color_brewer(palette = "Set3") +
+  theme(
+    legend.position = "none", 
+    axis.text.y = element_text(size = 7)
+    ) +
+  coord_flip() 
+
+```
+
+### Diagnostics
+
+@fig-trace-1 is a trace plot. It shows... This suggests...
+
+@fig-trace-2 is a trace plot. It shows... This suggests...
+
+@fig-rhat is a Rhat plot. It shows... This suggests...
+
+```{r}
+#| echo: false
+#| eval: true
+#| message: false
+#| warning: false
+#| label: fig-trace
+#| fig-cap: "Checking the convergence of the MCMC algorithm"
+#| fig-subcap: ["Trace plot - Contract Type","Trace plot - Buyers"]
+#| layout-nrow: 2
+
+# Extract the parameter names
+param_names <- colnames(as.matrix(bayesian_model))
+
+# Use grep to find all parameters that contain "ContractType"
+contract_type_params <- grep("ContractType", param_names, value = TRUE)
+
+# Use grep to find all parameters that contain "Buyer"
+buyer_params <- grep("Buyer", param_names, value = TRUE)
+
+# # Group 1: Buyers containing the word "the"
+# buyers_with_the <- grep("the", buyer_params, value = TRUE, ignore.case = TRUE)
+# 
+# # Group 2: Buyers containing the word "the"
+# buyers_with_and <- grep("and", buyer_params, value = TRUE, ignore.case = TRUE)
+# buyers_with_and <- buyers_with_and[!grepl("the", buyers_with_and, ignore.case = TRUE)]
+# 
+# # Group 3: Buyers containing the word "the"
+# buyers_with_of <- grep("of", buyer_params, value = TRUE, ignore.case = TRUE)
+# buyers_with_of <- buyers_with_of[!grepl("the|and", buyers_with_of, ignore.case = TRUE)]
+# 
+# # Group 4: Buyers containing the word "Canada"
+# buyers_with_canada <- grep("Canada", buyer_params, value = TRUE, ignore.case = TRUE)
+# buyers_with_canada <- buyers_with_canada[!grepl("the|and|of", buyers_with_canada, ignore.case = TRUE)]
+# 
+# # Group 5: Buyers that do not contain "the" or "Canada"
+# other_buyers <- grep("Canada|the|and|of", buyer_params, value = TRUE, invert = TRUE, ignore.case = TRUE)
+
+# Plot trace for ContractType
+plot(bayesian_model, "trace", pars = contract_type_params) +
+  theme_minimal() +
+  theme(
+    legend.position = "bottom",                # Place legend at the bottom
+    legend.text = element_text(size = 6),      # Adjust legend label size
+    legend.title = element_text(size = 8),     # Adjust legend title size
+    axis.text.x = element_text(size = 6),      # Adjust x-axis text size
+    axis.text.y = element_text(size = 6),      # Adjust y-axis text size
+    strip.text = element_text(size = 5)
+    )
+
+# Plot trace for ContractType
+plot(bayesian_model, "trace", pars = buyer_params) +
+  theme_minimal() +
+  theme(
+    legend.position = "bottom",                # Place legend at the bottom
+    legend.text = element_text(size = 6),      # Adjust legend label size
+    legend.title = element_text(size = 8),     # Adjust legend title size
+    axis.text.x = element_text(size = 4),      # Adjust x-axis text size
+    axis.text.y = element_text(size = 5),      # Adjust y-axis text size
+    strip.text = element_text(size = 5)
+    ) 
+
+# # Plot trace for buyers' name containing "the"
+# plot(bayesian_model, "trace", pars = buyers_with_the)
+# 
+# # Plot trace for buyers' name containing "and"
+# plot(bayesian_model, "trace", pars = buyers_with_and)
+# 
+# # Plot trace for buyers' name containing Canada
+# plot(bayesian_model, "trace", pars = buyers_with_canada)
+# 
+# # Plot trace for buyers' name containing "of"
+# plot(bayesian_model, "trace", pars = buyers_with_of)
+# 
+# # Plot trace for Other buyers
+# plot(bayesian_model, "trace", pars = other_buyers)
+```
+```{r}
+#| label: fig-rhat
+#| echo: false
+#| eval: true
+#| fig-cap: "Rhat plot for bayesian model"
+#| message: false
+#| warning: false
+#| fig-subcap: ["Rhat plot - Full model","Rhat plot - Reduced model"]
+#| layout-ncol: 2
+
+plot(bayesian_model_full, "rhat")
+plot(bayesian_model, "rhat")
+```
+## Linear Regression Model
+
+```{r}
+#| label: tbl-keyestimates
+#| tbl-cap: Summary of key model estimates for Microsoft, including coefficients for predictors like xxxx, with standard errors for each estimate. Model performance statistics, such as sample size, R², and adjusted R², are also displayed.
+#| echo: false
+#| eval: true
+#| warning: false
+#| message: false
+
+# load data and model
+lm_model_full <- readRDS(here::here("models/lm_model_full.rds"))
+lm_model <- readRDS(here::here("models/lm_model.rds"))
+model_list <- list("Linear Model_Full" = lm_model_full, "Linear Model" = lm_model)
+
+modelsummary(
+  model_list,
+  output = "kableExtra", 
+  statistic = "std.error", 
+  coef_map = c("ContractType" = "ContractType", "Buyer" = "Buyer", 
+               "ContractDays" = "ContractDays", "PhaseDays" = "PhaseDays")
+  ) %>%
+  kable_styling(latex_options = c("striped", "scale_down"))
+```
+
+## Random Forest Model
+
+```{r}
+#| label: tbl-rfkeyestimates
+#| tbl-cap: Summary of key model estimates for Microsoft, including coefficients for predictors like xxxx, with standard errors for each estimate. Model performance statistics, such as sample size, R², and adjusted R², are also displayed.
+#| echo: false
+#| eval: true
+#| warning: false
+#| message: false
+
+# load data and model
+rf_model<- readRDS(here::here("models/rf_model.rds"))
+
+# Summary of the Random Forest model
+summary(rf_model, output = "kableExtra")
+
+# # Error rates
+# rf_model$err.rate  # Error rates for each class (classification)
+# rf_model$oob.err    # Out-of-bag error estimate
+
+```
+
+# Methodology
 
 The methodology employed in this study involves analyzing federal procurement contracts awarded to Microsoft, leveraging data from two primary sources: Public Services and Procurement Canada (PSPC) and the Treasury Board of Canada Secretariat (TBS). These two datasets provide information on government procurement, but they come with distinct limitations and reporting structures [@ProcurementSources].
 
-### Data Sources and Structure
+## Data Sources and Structure
 
 Federal procurement data is categorized into two main streams:
 
@@ -459,7 +678,7 @@ Federal procurement data is categorized into two main streams:
 
 + TBS consolidates procurement data from all government departments and requires proactive publication under the Access to Information Act. The TBS dataset is more comprehensive in terms of the number of contracts, but it suffers from inconsistencies and gaps in the reported fields. TBS publishes data quarterly, and records before 2017 should not be considered complete. Unlike PSPC, TBS data includes the full details of contract awards but does not incorporate tender or solicitation data.
 
-### Data Integration and Challenges:
+## Data Integration and Challenges:
 
 There is an overlap between TBS and PSPC data, such that many contracts reported by PSPC are also included in the TBS dataset. However, the two datasets do not always align perfectly. Contracts reported by TBS may contain different details from the PSPC records. 
 
@@ -467,7 +686,7 @@ This mismatch is exacerbated by the lack of a consistent unique identifier that 
 
 To address this, both datasets were kept separate in [@ProcurementSources]. PSPC data was used primarily for its comprehensive tender information, while TBS data was relied upon for its broader coverage of contract awards, spanning more years and a greater volume of contracts.
 
-### Solicitation Methods and Contract Types:
+## Solicitation Methods and Contract Types:
 
 Federal procurement processes are governed by various solicitation methods, which determine how contracts are awarded. These methods are categorized into competitive and non-competitive processes. 
 

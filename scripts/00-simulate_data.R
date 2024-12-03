@@ -1,7 +1,7 @@
 #### Preamble ####
 # Purpose: Simulate data 
 # Author: Deyi Kong
-# Date: November 28th, 2024
+# Date: November 30th, 2024
 # Contact: deyi.kong@mail.utoronto.ca
 # License: MIT
 # Pre-requisites: The `tidyverse` package must be installed
@@ -17,7 +17,7 @@ set.seed(123)
 # define possible values to simulate data
 contract <- c("License/Maintenance fees", "Communication Services", "Computer Services", "Application software", "Production and operations")
 buyer <- c("Shared Services Canada", "Employment and Social Development Canada", "Royal Canadian Mounted Police", "Global Affairs Canada", "National Defence")
-supplier <- c("MICROSOFT CANADA INC.", "BELL TELEPHONE CO. OF CANADA", "MICROSOFT CANADA CO.", "BELL CANADA")
+supplier <- c("MICROSOFT CANADA INC.", "MICROSOFT CANADA CO.")
 n <- 100
 
 # generate random start and end dates for each poll

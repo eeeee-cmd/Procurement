@@ -39,3 +39,4 @@ summary(cleaned_data)
 missing_data <- cleaned_data |>
   summarise(across(everything(), ~ sum(is.na(.))))
 missing_data
+

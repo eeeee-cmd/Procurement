@@ -12,4 +12,3 @@ library(readr)
 
 # Read the raw federal procurement data of Microsoft and Bell
 microsoft_data <- read_csv(here::here("data/raw_data/procurement_microsoft.csv"))
-bell_data <- read_csv(here::here("data/raw_data/procurement_bell.csv"))

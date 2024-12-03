@@ -49,17 +49,19 @@ library(rstanarm)
 cleaned_data <- read_parquet(here::here("data/analysis_data/procurement_cleaned.parquet"))
 ```
 
+
 # Introduction
 
 Government procurement refers to the acquisition of goods, services, and construction services by the government, spanning a wide range of purchases from office supplies to materials and services needed for large-scale infrastructure projects [@gac]. This process enables public sector innovation, economic stimulus and fulfills strategic objectives. Within this landscape, the relationship between major technology providers and governmental bodies has become increasingly prominent. Among the key in government procurement, large technology firms like Microsoft have become vital partners in IT supporting. Despite the growing reliance on tech giants, limited research examines the dynamics of such partnerships, particularly in the context of federal procurement contracts.
 
 This paper aims to address this gap by analyzing federal procurement contracts awarded to Microsoft from 2020 up to September 2024. Using publicly available data from Investigative Journalism Foundation [@IJF], the study focusing on contract values, categories, and Microsoft’s relationships with key government buyers. 
 
-The main estimand in this study is the amount of federal procurement contracts awarded to Microsoft. This metric is analyzed across multiple dimensions, including contract categories, duration, and partnerships, to quantify Microsoft's role in federal procurement. A Bayesian modeling approach is employed to predict future trends in the contract amounts, integrating prior knowledge with observed data to address uncertainty and provide more robust estimates. The findings reveal that Microsoft plays a dominant role in IT infrastructure and modernization, securing the majority of high-value contracts and establishing consistent partnerships with departments such as Employment and Social Development Canada and National Defense. These findings highlight the broader implications of the private tech sector’s influence on public sector procurement, raising questions about competitiveness, dependency, and strategic alignment.
+The main estimand in this study is the amount of federal procurement contracts awarded to Microsoft. This metric is analyzed across multiple dimensions, including contract categories, duration, and partnerships, to quantify Microsoft's role in federal procurement. 
+A Bayesian modeling approach is employed to predict future trends in the contract amounts, integrating prior knowledge with observed data to address uncertainty and provide more robust estimates. The findings reveal that Microsoft plays a dominant role in IT infrastructure and modernization, securing the majority of high-value contracts and establishing consistent partnerships with departments such as Employment and Social Development Canada and National Defence. These findings highlight the broader implications of the private tech sector’s influence on public sector procurement, raising questions about competitiveness, dependency, and strategic alignment.
 
 This study contributes to understand the procurement landscape, providing valuable information for policymakers, industry stakeholders, and academics. It underscores the importance of transparency, strategic planning, and balancing innovation with equity in government contracts.
 
-The structure of the paper is as follows: [@sec-data] outlines the data sources and variables considered, followed by the model setup and justificationa in [@sec-mod]. The results in [@sec-result] presents the key findings of the analysis, with a discussion on the implications. [@sec-discussion] then discusses potential limitations of data, model and suggestions for future research. [@sec-data-details] provides additional data detailed informations about data, model in [@sec-model-details] and methodology in [@sec-meth-details].
+The structure of the paper is as follows: [@sec-data] outlines the data sources and variables considered, followed by the model setup and justifications in [@sec-mod]. The results in [@sec-result] presents the key findings of the analysis, with a discussion on the implications. [@sec-discussion] then discusses potential limitations of data, model and suggestions for future research. The appendix provides additional detailed information about models in [@sec-model-details] and methodology in [@sec-meth-details].
 
 # Data {#sec-data}
 
@@ -75,7 +77,6 @@ The measurement process delegates contracts routed through Public Service and Pr
 
 More information about solicitation method can be found in @sec-meth-details.
 
-\newpage
 
 ## Data Cleaning
 
@@ -91,11 +92,11 @@ After completing the cleaning, we saved the final dataset in both Parquet and CS
 
 ## Outcome Variables
 
-The main outcome variable of interest is the amount of federal procurement contracts awarded to Microsoft. This variable is need to represent the financial magnitude of Microsoft with the federal government and measurement of evaluating procurement dynamics. [@fig-amount] illustrates the annual total amounts of federal procurement contracts awarded to Microsoft from 2020 to 2024 (up to September). The histogram reveals a generally increasing trend of total value of each year's contract. This may reflect the growing of technology in government operations, including software, cloud solutions, and IT infrastructure. The amount in 2023 doubles the amount in 2021, which suggests a heightened investment in federal procurement funding and large-scale projects. 
+The main outcome variable of interest is the amount of federal procurement contracts awarded to Microsoft. This variable is need to represent the financial magnitude of Microsoft with the federal government and measurement of evaluating procurement dynamics. [@fig-amount] is a histogram, which illustrates the annual total amounts of federal procurement contracts awarded to Microsoft from 2020 to 2024 (up to September). [@fig-amount] shows a generally increasing trend of total value of each year's contract. This may reflect the growing of technology in government operations, including software, cloud solutions, and IT infrastructure. The amount in 2023 doubles the amount in 2021, which suggests a heightened investment in federal procurement funding and large-scale projects. 
 
 ```{r}
 #| label: fig-amount
-#| fig-cap: The histogram shows the distribution of the total amount($million) of each year's federal contract (since 2020).
+#| fig-cap: The histogram shows the distribution of the total amount ($million) of each year's federal contract (since 2020).
 #| echo: false
 #| eval: true
 #| warning: false
@@ -122,13 +123,23 @@ ggplot(yearly_amount, aes(x = as.factor(Year), y = TotalAmount)) +
     y = "Total Amount ($million)"
   ) +
   theme_minimal() +
-  theme(axis.text.y = element_text(size = 10), axis.text.x = element_text(size = 10))
+  theme(
+    axis.text.y = element_text(size = 8), 
+    axis.title.y = element_text(size = 10),
+    axis.title.x = element_text(size = 10),
+    axis.text.x = element_text(size = 8),
+    plot.title = element_text(size = 12)
+    )
 
 ```
 
+\newpage
+
 ## Predictor Variables
 
-In this analysis, several key predictors were identified to evaluate procurement data effectively. The first variable, **ContractType**, is a character-type variable that identifies each procurement contract awarded to Microsoft into Categories. [@tbl-contract]
+In this analysis, several key predictors were identified to evaluate procurement data effectively. 
+
+**ContractType**, is a character-type variable that identifies each procurement contract awarded to Microsoft into Categories. License/Maintenance Fees has the highest number of contracts (495) in [@tbl-contract], suggesting the recurring need for software and system maintenance. Computer Services has the highest average contract value (\$1,763,432) in [@tbl-contract], reflecting the complexity and scope of IT services. Database Access Services also shows significant average values (\$1,680,453), indicating the importance of large-scale data systems in government operations.
 
 ```{r}
 #| label: tbl-contract
@@ -161,11 +172,11 @@ summary_table %>%
 
 ```
 
-**Buyer** is a character-type variable representing the federal government department or agency who initiate and award the contract. [@tbl-buyer] shows the top 10 buyer's name who has over 25 contracts with Microsoft, which identifies key partners and understand the distribution of contracts across sectors. The table highlights that Employment and Social Development Canada (ESDC) and National Defence account over 50% of Microsoft's total awards.
+**Buyer** is a character-type variable representing the federal government department or agency who initiate and award the contract. [@tbl-buyer] shows the buyer who has over 25 contracts with Microsoft, which identifies key partners and understand the distribution of contracts across sectors. The table highlights that Employment and Social Development Canada (ESDC) and National Defence account over 50% of Microsoft's total awards.
 
 ```{r}
 #| label: tbl-buyer
-#| tbl-cap: The table summarizes top 10 buyer's name who has over 25 contracts with Microsoft in total with contract count, total dollar amount, and average dollar amount per contract. 
+#| tbl-cap: The table summarizes top 10 buyers with contract count, total dollar amount, and average dollar amount per contract. 
 #| echo: false
 #| eval: true
 #| warning: false
@@ -205,8 +216,6 @@ This dataset contains a series of date-type variables capturing key milestones i
 #| eval: true
 #| warning: false
 #| message: false
-#| fig.width: 4    # Width of the figure in inches
-#| fig.height: 3   # Height of the figure in inches
 
 # create plot for Distribution of Poll Scores by candidate
 ggplot(cleaned_data, aes(x = PhaseDays)) +
@@ -222,6 +231,8 @@ ggplot(cleaned_data, aes(x = PhaseDays)) +
   ) +
   theme_minimal()
 ```
+
+\newpage
 
 **ContractDays** is a numeric variable which is the days between $StartDate$ and $EndDate$. [@fig-contract] shows the distribution of performance period. The right skewed distribution in [@fig-contract] indicates that the majority of contract duration is within a year. There is an over 5 years performance period in [@fig-contract] implies a massive project that requires extensive preparation.
 
@@ -271,6 +282,10 @@ ggcorrplot(correlation_matrix, lab = TRUE) +
     axis.text.y = element_text(size = 10) # Adjust y-axis text size
   )
 ```
+More information about the data analysis can be found in @sec-result.
+
+
+\newpage
 
 # Model {#sec-mod}
 
@@ -295,21 +310,22 @@ Where:\
 The model is fit using the `rstanarm` package of @rstanarm in R [@citeR], with the specified priors guiding the model while allowing it to adapt to the data.
 
 ### Model Justification
-This paper expect that the factors - such as ContractType, Buyer, ContractDays and PhaseDays - will influence the outcome of contract amount. In particular, ...
+This paper expect that the factors - such as $ContractType$, $Buyer$, $ContractDays$ and $PhaseDays$ - will influence the outcome of contract amount. In particular, $ContractType$ captures the service or product, such as software licenses or consulting services, which significantly influences contract value. $Buyer$ reflects the federal department or agency awarding the contract, as some departments have higher budgets and strategic priorities that result in larger contracts. $ContractDays$ and $PhaseDays$ quantify the duration and preparatory timelines of contracts, providing insight into their scope and complexity.
 
-In this paper, I compared three different modeling approaches to examine the factors influencing the federal procurement contract amount: linear regression, random forest, and Bayesian regression. Each of these models offers different advantages and trade-offs. More detailed justification about model selection will be discussed in [@sec-discussion]. The Bayesian model is selected due to better performance and flexibility.
+In this paper, I compared linear regression and Bayesian regression to examine the factors influencing the federal procurement contract amount. Each of these models offers different advantages and trade-offs. More detailed justification about model selection will be discussed in [@sec-discussion]. The Bayesian model is selected due to better performance and flexibility.
 
 Bayesian approach can explicitly model uncertainty by incorporating prior knowledge and provides a full posterior distribution of the model parameters. This is useful when the data is sparse and prior knowledge about the contract types, buyers, or duration is available. The linear regression structure was selected due to its simplicity and interpretability. The numeric dependent variable, $Amount_i$, gives a chance of linear regression for modeling the relationship between the contract amount and its predictors. 
 
 By including weakly informative priors for the coefficients and residual standard deviation, the model remains flexible and interpretable, while still preventing extreme parameter estimates. The use of an exponential prior for $\sigma$ allows the model to adapt a scale of residuals in the data, providing estimates of the variance. The normal prior for the coefficients $\beta_1, \beta_2, \beta_3, \beta_4$ with mean 0 and standard deviation 2 shows the expectation that the coefficients should not be too larg but flexible enough to adapt the data.
 
-This Bayesian linear regression model balances complexity with interpretability, and its flexibility allows us to draw meaningful observations from the data while quantifying uncertainty around the estimates, especially when the sample size is not large or when the predictors have a complex relationship with the outcome. [TOO GENERAL, CHANGE]
+This Bayesian regression model balances complexity with interpretability, and its flexibility with quantifying uncertainty around the estimates, especially when the sample size is not large and the predictors have a complex relationship with the outcome.
 
 ## Assumptions and Limitations
 
 The model takes several assumptions, including linear relationship between predictors, normality of the residuals, independence of observations, homoscedasticity, and reasonable chosen priors.
 
-While the model presents some valuable observations of Microsoft’s federal procurement contracts, there are some model limitations including prior function selection, data quality, potential for endogeneity, generalizability, and unobserved variables. These limitations will be discussed more detailed in [@sec-discussion].
+While the model presents some valuable observations of Microsoft’s federal procurement contracts, there are some model limitations including prior function selection, data quality, potential for endogeneity, generalizability, and unobserved variables. These limitations will be discussed more detailed in [@sec-discussion-model].
+
 
 # Results {#sec-result}
 
@@ -317,7 +333,8 @@ While the model presents some valuable observations of Microsoft’s federal pro
 
 The boxplot @fig-box-1 shows the Contract Duration across various Contract Types. As we can see in @fig-box-1, Computer Services and Consulting contracts tend to have longer durations. This suggests these contracts often involve more complex or ongoing services that require extended timelines. In contrast, License/Maintenance Fees and Software contracts show shorter durations, with tighter interquartile ranges and lower medians, indicating that these contracts are likely less complex and are typically limited to a defined time period. 
 
-The boxplot @fig-box-2 shows the Phase Duration for each Contract Type. @fig-box-2 reveals that certain contract types, such as Consulting and Distributed Computing Environment, have longer preparatory phases, with a higher median and a larger spread. This suggests these contracts require more time for negotiation, planning, or administrative procedures before the actual work begins. On the other hand, Computer Services and License/Maintenance Fees contracts exhibit shorter preparatory phases, as evidenced by the lower medians and narrower interquartile ranges in @fig-box-2. This suggests that these contracts are more straightforward and may require less preparation before implementation.
+The boxplot @fig-box-2 shows the Phase Duration for each Contract Type. @fig-box-2 highlights Consulting and Distributed Computing Environment have longer preparatory phases, with a higher median and a larger spread. This suggests these contracts require more time for negotiation, planning, or administrative procedures before the actual work begins. On the other hand, Computer Services and License/Maintenance Fees contracts exhibit shorter preparatory phases, as evidenced by the lower medians and narrower interquartile ranges in @fig-box-2. This suggests that these contracts are more straightforward and may require less preparation before implementation.
+
 ```{r}
 #| label: fig-box
 #| fig-cap: The Boxplots shows the relationship of ContractDays and PhaseDays with ContractType. 
@@ -348,6 +365,8 @@ ggplot(data, aes(x = ContractType, y = PhaseDays)) +
   theme(axis.text.x = element_text(size = 6))
 ```
 
+The heatmap @fig-date shows the distribution of federal procurement contracts awarded to Microsoft over four-month periods from 2020 to 2024. The frequency tends to drop in the September–December period, it suggests the budgetary constraints or the fiscal year-end.
+A noticeable decline occurs in 2024 because the data only updates until September. The darker shades during early and mid-year in @fig-date align with expected procurement trends, where departments allocate funds proactively before the fiscal year closes. Understanding this distribution provides critical insights into procurement planning and Microsoft's role during different periods.
 
 ```{r}
 #| label: fig-date
@@ -382,37 +401,57 @@ ggplot(contract_counts, aes(x = Period, y = Year, fill = Count)) +
 ```
 
 
+\newpage
+
+The scatter plot @fig-mobilization shows the relationship between the Award Date and the Start Date of federal procurement contracts awarded to Microsoft. Most points lie on the diagonal line indicating the numerous contracts commence immediately after being awarded. This is particularly common for time-sensitive contract types, such as License/Maintenance Fees Related. Contracts in 2020–2021 tend to exhibit a wider spread in start dates, possibly reflecting a slower procurement process during those years. More recent contracts in @fig-mobilization cluster closer to the diagonal, suggesting streamlined processes or more immediate implementation needs.
+
 ```{r}
 #| label: fig-mobilization
-#| fig-cap: The scatter plot shows ...
+#| fig-cap: The scatter plot shows the relationship between Award Date and Start Date for the top 10 federal procurement contracts types. Each point represents a contract, with colors indicating different contract types. The plot helps to identify trends in the timing between contract award and commencement.
 #| echo: false
 #| eval: true
 #| warning: false
 #| message: false
-#| 
-ggplot(data, aes(x = AwardDate, y = StartDate)) +
-  geom_point(aes(color = Contract)) +
+
+ggplot(
+  data, 
+  aes(x = AwardDate, y = StartDate)) +
+  geom_point(aes(color = ContractType)) +
   labs(x = "Award Date", y = "Start Date", title = "Award Date vs Start Date") +
-  theme(legend.position = "none")  # This removes the legend
+  theme(
+    legend.position = "right",
+    legend.text = element_text(size = 6),      # Adjust legend label size
+    legend.title = element_text(size = 8)    # Adjust legend title size
+    )  # This removes the legend
 ```
+
+The scatter plot @fig-performance shows the diversity in contract durations across procurement categories. Most contracts ends within one year of their start dates, suggesting that most federal contracts are short-term. A smaller subset of contracts extends beyond three years, typically associated with large-scale projects or ongoing support agreements. @fig-performance also highlights that the most contract ends in the year of 2026. A few contracts with over 5 years stand out in 2021, suggesting that longer durations are prevalent in service-oriented categories.
 
 ```{r}
 #| label: fig-performance
-#| fig-cap: The scatter plot shows ....
+#| fig-cap: The scatter plot shows the relationship between Start Date and End Date for the top 10 Microsoft’s federal procurement contracts types. Each point represents a contract, and the color reflects the contract type. This visualization provides insights into the duration of the contracts and any deviations from expected timelines.
 #| echo: false
 #| eval: true
 #| warning: false
 #| message: false
-#| 
-ggplot(data, aes(x = StartDate, y = EndDate)) +
-  geom_point(aes(color = Contract)) +
+
+ggplot(
+  data, 
+  aes(x = StartDate, y = EndDate)) +
+  geom_point(aes(color = ContractType)) +
   labs(x = "Start Date", y = "End Date", title = "Start Date vs End Date") +
-  theme(legend.position = "none")  # This removes the legend
+  theme(
+    legend.position = "right",
+    legend.text = element_text(size = 6),      # Adjust legend label size
+    legend.title = element_text(size = 8)      # Adjust legend title size
+  )
 ```
 
-## Model
+\newpage
 
-Our results are summarized in @tbl-modelresults.
+## Model Summary
+
+The results are summarized in @tbl-modelresults, including R², Log-Likelihood (Log.Lik.), Expected Log Pointwise Predictive Density (ELPD), Leave-One-Out Information Criterion (LOOIC), Watanabe-Akaike Information Criterion (WAIC), and Root Mean Square Error (RMSE).
 
 ```{r}
 #| echo: false
@@ -428,7 +467,7 @@ bayesian_model <-
 #| label: tbl-modelresults
 #| echo: false
 #| eval: true
-#| tbl-cap: "Explanatory models of contract amount based on ContractType, Buyer, ContractDays, PhaseDays and Month"
+#| tbl-cap: "Explanatory models of contract amount based on ContractType, Buyer, ContractDays and PhaseDays"
 #| warning: false
 #| message: false
 
@@ -448,28 +487,41 @@ modelsummary(
   kable_styling(latex_options = c("striped", "scale_down"))
 ```
 
+The Full Bayesian Model has an $R^2$ of 0.289, indicating that approximately 28.9% of the variance in the contract amount is explained by the model. In comparison, the Reduced Bayesian Model explains only 8.2% of the variance in the contract amount, suggesting that the inclusion of additional predictors (specific buyers and contract names) improves the model’s explanatory power. However, both models have very low adjusted $R^2$, which suggests that the model is not capturing much of the unexplained variance in the data.
 
+The Full Bayesian Model has a Log-Likelihood of $-15,351.795$ and an ELPD of $-15,519.3$, while the Reduced Model has a Log-Likelihood of $-15,398.022$ and an ELPD of $-15,444.8$. These values suggest that the Full Bayesian Model fits the data slightly better than the Reduced Model, as it produces higher Log-Likelihood and ELPD values.
+ 
+The Full Bayesian Model has a lower LOOIC ($31,038.7$) and WAIC ($30,992.3$) compared to the Reduced Model, indicating that the Full Bayesian Model is better at out-of-sample predictive performance. Lower values of LOOIC and WAIC are indicative of better model fit and predictive accuracy.
+
+The Full Bayesian Model has a lower RMSE ($2,714,467.04$) compared to the Reduced Model ($2,971,135.35$), indicating better predictive performance. The lower RMSE value suggests that the Full Bayesian Model is more accurate in predicting the total contract amount.
 
 \newpage
 
 # Discussion {#sec-discussion}
 
-## Data
+## Contract Complexity and Cost
+The positive association between $ContractDays$ and contract amount suggests that longer contracts are typically more expensive, reflecting the increased scope, complexity, and resource requirements of these agreements. This is particularly relevant for IT-related contracts, which often involve extensive development, maintenance, and support services.
 
-The completeness and reliability of the data. For the missing or erroneous records, despite the data cleaning process, introduce bias and distort the findings.
+## Negotiation and Efficiency
+The negative association between $PhaseDays$ and contract amount indicates that longer preparatory phases may lead to reduced costs, potentially due to more thorough planning, negotiation, or budgetary constraints. This insight can inform government strategies for managing procurement timelines to achieve cost efficiency.
 
-Since the data of the procurement contracts awarded to Microsoft in Canada is between 2020 and 2024 (up to September), the analysis provides a snapshot of recent procurement trends during this period. However, the data do not capture longer-term patterns or emerging shifts in procurement policies.
+## Sector-Specific Effects 
+The significant variation in contract amounts across different contract types (e.g., Consulting, Software) and $buyers$ (e.g., National Defence, Employment and Social Development Canada) underscores the importance of sector-specific factors in procurement dynamics. Departments with higher budgets or critical mandates, such as National Defence, tend to award larger contracts, highlighting their influence in shaping overall procurement trends.
 
-## Limitations
+## Model Performance and Limitations {#sec-discussion-model}
 
+The Bayesian model has low adjusted $R^2$ values. This means the model explains only a small portion (28.9%) of the variance in contract amounts. This suggests that important predictors may be missing. Also, missing or erroneous values in variables like $ContractDays$ or $PhaseDays$ could introduce bias and reduce the reliability of the results. 
+  
 One limitation of the model is that it may fail to account for certain external factors or unobserved variables such as political factors, budgetary constraints, and departmental priorities. These external factors could lead to omitted variable bias, which also influence procurement decision.
 
-The model assumes a linear relationship between the independent variables and the dependent variable. However, procurement dynamics may be more complex, with non-linear interactions between variables. The model categorizes contract types and buyers into broad groups, which may oversimplify the true diversity of contracts awarded. 
+The model assumes a linear relationship between the independent variables and the dependent variable, which oversimplify the dynamics of federal procurement. The model categorizes contract types and buyers into broad groups, which also oversimplify the true diversity of contracts awarded. Future studies could explore non-linear models, such as splines or machine learning approaches, to capture more complex patterns.  
 
 There may be issues of endogeneity, where causality runs in both directions between some predictors and the outcome variable. The amount of procurement from a buyer may influence the allocation of future budgets to that department, which in turn affects future contract amounts awarded to Microsoft. This reciprocal relationship could introduce bias in the coefficient estimates if not properly addressed.
 
-## Model Selection
+## Alternative Models Considered
+Linear regression model was evaluated in the paper. While the linear regression model was straightforward and interpretable, it lacked the flexibility to incorporate uncertainty in parameter estimates. The Bayesian regression model was chosen as a middle ground, balancing flexibility, interpretability, and the ability to quantify uncertainty. However, the limitations observed in model performance suggest that future work could benefit from integrating features of these alternative approaches.
 
+More results about these two models can be found in @sec-model-details.
 
 ## Weaknesses and Next Steps
 
@@ -483,18 +535,17 @@ Data quality and consistency issues are also of concern. The anomalies identifie
 
 # Appendix {-}
 
-
-# Additional data details {#sec-data-details}
-
-# Model details {#sec-model-details}
+# Additional Model details {#sec-model-details}
 
 ## Bayesian Model
 
-### Posterior predictive check
+### Posterior Predictive Check
 
-In @fig-ppcheckandposteriorvsprior-1 we implement a posterior predictive check. This shows...
+In @fig-ppcheckandposteriorvsprior-1 we implement a posterior predictive check, comparing the observed data, $y$ and the posterior predictive replicated data $y_{rep}$. This shows how well the Bayesian model replicates the observed data. @fig-ppcheckandposteriorvsprior-1 displays a pronounced spike at 0, where $y$ has a significantly higher frequency of values at $0e+00$ compared to the predictions from the model. This discrepancy indicates that the model fails to accurately capture the concentration of contracts with a value of exactly zero or near-zero, potentially due to missing covariates or unmodeled structural factors influencing the occurrence of zero-value contracts.
 
-In @fig-ppcheckandposteriorvsprior-2 we compare the posterior with the prior. This shows... 
+The predicted distribution $y_{rep}$ in @fig-ppcheckandposteriorvsprior-1 aligns more closely with the observed data at larger values, suggesting that the model performs well in capturing the behavior of non-zero contract amounts. However, the inability to replicate the sharp peak at 0 highlights a significant limitation in the model’s ability to account for zero-value contracts or extreme sparsity in the data. This suggests a potential need for refinements, such as incorporating a zero-inflated component or additional predictors to explain this phenomenon.
+
+In @fig-ppcheckandposteriorvsprior-2 we compare the posterior with the prior. This shows the influence of the observed data on parameter estimates. For most parameters, the posterior distributions are narrower and shifted away from the priors, indicating that the data provides substantial information to update the prior beliefs. Some parameters, however, show minimal deviation from their priors, which may suggest either weak data informativeness or a lack of association with the response variable.
 
 ```{r}
 #| eval: true
@@ -503,8 +554,8 @@ In @fig-ppcheckandposteriorvsprior-2 we compare the posterior with the prior. Th
 #| warning: false
 #| label: fig-ppcheckandposteriorvsprior
 #| layout-ncol: 2
-#| fig-cap: "Examining how the model fits, and is affected by, the data"
-#| fig-subcap: ["Posterior prediction check", "Comparing the posterior with the prior"]
+#| fig-cap: "Examining how the model fits and affected by the data"
+#| fig-subcap: ["Posterior Prediction Check", "Comparing the Posterior with the Prior"]
 
 pp_check(bayesian_model) +
   theme_classic() +
@@ -518,16 +569,13 @@ posterior_vs_prior(bayesian_model) +
     axis.text.y = element_text(size = 7)
     ) +
   coord_flip() 
-
 ```
 
 ### Diagnostics
 
-@fig-trace-1 is a trace plot. It shows... This suggests...
+@fig-trace-1 is a trace plot related to $ContractType$. Each chain shows the sampled values of the parameters over the iterations of the Markov Chain Monte Carlo (MCMC) process. The chains for all contract type parameters appear to mix well and fluctuate around a consistent range, indicating convergence. There is no evidence of trends or drifts in the chains, which suggests that the MCMC process effectively explores the posterior distribution.
 
-@fig-trace-2 is a trace plot. It shows... This suggests...
-
-@fig-rhat is a Rhat plot. It shows... This suggests...
+@fig-trace-2 is a trace plot associated with $Buyers$. Similar to @fig-trace-1, the plot shows the sampled parameter values for multiple MCMC chains over iterations. The chains in @fig-trace-2 for most buyer parameters exhibit good mixing and stability, with fluctuations around a consistent range. This indicates effective convergence for the majority of buyer-related parameters. A few parameters in @fig-trace-2 exhibit slightly slower mixing, but they still stabilize, suggesting no major convergence issues.
 
 ```{r}
 #| echo: false
@@ -605,6 +653,13 @@ plot(bayesian_model, "trace", pars = buyer_params) +
 # # Plot trace for Other buyers
 # plot(bayesian_model, "trace", pars = other_buyers)
 ```
+
+@fig-rhat is Rhat plot. An Rhat value of 1.0 indicates that the MCMC chains have converged, meaning they are sampling from the same posterior distribution. If the Rhat value exceeds 1.05, it signals potential issues with convergence, indicating that the chains might not have mixed properly or that there is insufficient sampling to reach stable parameter estimates.
+
+@fig-rhat-1 is a Rhat plot for the Full Bayesian model. The Rhat values for most parameters are around 1.0, which suggests that convergence has been achieved for the majority of parameters. There are no parameters with Rhat values exceeding 1.05, indicating that the model's convergence is sound.
+
+@fig-rhat-2 is a Rhat plot for the reduced Bayesian model, which shows similar results. All parameters having Rhat values close to 1.0, further confirming that convergence is achieved across both models. There are no parameters with Rhat values exceeding 1.05, which supports the reliability of sampling process.
+
 ```{r}
 #| label: fig-rhat
 #| echo: false
@@ -618,23 +673,28 @@ plot(bayesian_model, "trace", pars = buyer_params) +
 plot(bayesian_model_full, "rhat")
 plot(bayesian_model, "rhat")
 ```
+
+\newpage
+
 ## Linear Regression Model
 
+The linear regression model is the most straightforward and interpretable among the models considered. It assumes a linear relationship between the outcome variable, $Amount$, and predictor variables - $Contract$, $Buyer$, $ContractDays$, $PhaseDays$. This makes it easy to understand how each predictor influences the contract amount. In @tbl-linear, linear regression model achieved an R² value of 0.220, shows that only 22% of the variance in contract amounts is explained by the predictors. The Root Mean Square Error (RMSE) was approximately \$2.71 million for the full model, indicating substantial prediction errors. 
+
+Linear regression models are computationally inexpensive and require fewer resources compared to more complex models like random forests or Bayesian regression.
+
 ```{r}
-#| label: tbl-keyestimates
-#| tbl-cap: Summary of key model estimates for Microsoft, including coefficients for predictors like xxxx, with standard errors for each estimate. Model performance statistics, such as sample size, R², and adjusted R², are also displayed.
+#| label: tbl-linear
+#| tbl-cap: Summary of key model estimates for Microsoft, including coefficients for numeric predictors like Contract Days and Phase Days, with standard errors for each estimate. Model performance statistics, such as sample size, R², and adjusted R², are also displayed.
 #| echo: false
 #| eval: true
 #| warning: false
 #| message: false
 
 # load data and model
-lm_model_full <- readRDS(here::here("models/lm_model_full.rds"))
 lm_model <- readRDS(here::here("models/lm_model.rds"))
-model_list <- list("Linear Model_Full" = lm_model_full, "Linear Model" = lm_model)
 
 modelsummary(
-  model_list,
+  list("Linear Model" = lm_model),
   output = "kableExtra", 
   statistic = "std.error", 
   coef_map = c("ContractType" = "ContractType", "Buyer" = "Buyer", 
@@ -643,27 +703,7 @@ modelsummary(
   kable_styling(latex_options = c("striped", "scale_down"))
 ```
 
-## Random Forest Model
-
-```{r}
-#| label: tbl-rfkeyestimates
-#| tbl-cap: Summary of key model estimates for Microsoft, including coefficients for predictors like xxxx, with standard errors for each estimate. Model performance statistics, such as sample size, R², and adjusted R², are also displayed.
-#| echo: false
-#| eval: true
-#| warning: false
-#| message: false
-
-# load data and model
-rf_model<- readRDS(here::here("models/rf_model.rds"))
-
-# Summary of the Random Forest model
-summary(rf_model, output = "kableExtra")
-
-# # Error rates
-# rf_model$err.rate  # Error rates for each class (classification)
-# rf_model$oob.err    # Out-of-bag error estimate
-
-```
+\newpage
 
 # Methodology {#sec-meth-details}
 
@@ -700,6 +740,123 @@ Two non-competitive options:
 
 + Advanced Contract Award Notice: Notice to suppliers that the buyer intends to award a contract to a pre-identified supplier, while accepting a Statement of Capabilities, not a bid, from challenging suppliers. 
 + Non-competitive: Blanket category for all other non-competitive processes.
+
+
+\newpage
+
+# Survey
+
+**Vendor Relationship Dynamics in Federal Procurement**
+
+**Introduction**
+
+We are conducting a survey to better understand the dynamics of vendor relationships in federal procurement processes, particularly with major technology providers like Microsoft. Your responses will be kept confidential and used only for research purposes.
+
+If you have any questions about this survey, please contact us: deyi.kong\@mail.utoronto.ca
+
+**Section 1: General Information**
+
+1. **What is your role in the procurement process?**  
+   - Procurement Officer  
+   - Project Manager  
+   - Technical Specialist  
+   - Other (please specify): _________
+
+2. **How many years of experience do you have in procurement?**  
+   - Less than 1 year  
+   - 1–5 years  
+   - 6–10 years  
+   - Over 10 years  
+
+3. **Which sector or department do you primarily represent?**  
+   - National Defence  
+   - Employment and Social Development Canada  
+   - Natural Resources Canada  
+   - Other (please specify): _________
+
+**Section 2: Vendor Interaction and Communication**
+
+4. **How would you describe your department’s relationship with Microsoft?**  
+   - Excellent  
+   - Good  
+   - Neutral  
+   - Poor  
+   - Very Poor  
+
+5. **How frequently does your department interact with Microsoft representatives?**  
+   - Weekly  
+   - Monthly  
+   - Quarterly  
+   - Annually  
+   - As needed  
+
+6. **What is the primary mode of communication with Microsoft?**  
+   - Email  
+   - Phone calls  
+   - In-person meetings  
+   - Online meetings (e.g., Zoom, Teams)  
+   - Other (please specify): _________
+
+**Section 3: Relationship Dynamics**
+
+7. **To what extent does Microsoft involve your department in the decision-making process for solutions or services?**  
+   - Always  
+   - Often  
+   - Sometimes  
+   - Rarely  
+   - Never  
+
+8. **How would you rate Microsoft’s responsiveness to your department’s needs or concerns?**  
+   - Very Responsive  
+   - Responsive  
+   - Neutral  
+   - Unresponsive  
+   - Very Unresponsive  
+
+9. **Does your department feel valued as a client by Microsoft?**  
+   - Strongly Agree  
+   - Agree  
+   - Neutral  
+   - Disagree  
+   - Strongly Disagree  
+
+**Section 4: Impact of the Vendor Relationship**
+
+10. **What is the biggest benefit of your department's relationship with Microsoft?**  
+    - Access to cutting-edge technology  
+    - Reliability of services  
+    - Cost efficiency  
+    - Strategic partnership opportunities  
+    - Other (please specify): _________
+
+11. **What challenges have you experienced in working with Microsoft? (Select all that apply)**  
+    - High costs  
+    - Limited customization options  
+    - Slow response times  
+    - Difficulty with contract negotiations  
+    - Other (please specify): _________
+
+12. **How likely are you to recommend Microsoft as a vendor to other departments?**  
+    - Very Likely  
+    - Likely  
+    - Neutral  
+    - Unlikely  
+    - Very Unlikely  
+
+**Section 5: Suggestions for Improvement**
+
+13. **What changes would you recommend for improving the relationship with Microsoft?**  
+    (Open text field)  
+
+14. **Are there alternative vendors you believe could meet your department’s needs better than Microsoft? If so, please specify.**  
+    (Open text field)  
+
+-----
+
+Thank you for your participation in this survey. Your feedback is invaluable in understanding and improving vendor relationships in federal procurement. If you have additional comments or would like to receive updates on the research findings, please indicate below.  
+   - [\ ] Yes, I’d like to receive updates.  
+   - [\ ] No, I do not wish to receive updates.  
+
 
 \newpage
 

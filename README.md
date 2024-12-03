@@ -16,12 +16,13 @@ The repo is structured as:
 -   `data/raw_data` contains the raw data as obtained from https://theijf.org/procurement/supplier/microsoft?region=.
 -   `data/analysis_data` contains the cleaned datasets that were constructed.
 -   `data/simulated_data` contains the simulated data that were constructed.
--   `models` contains fitted models. 
+-   `models` contains fitted models and model API. 
 -   `other` contains details about LLM chat interactions and sketches.
+-   `other/shiny_app` contains the shiny application.
 -   `paper` contains the files used to generate the paper, including the Quarto document and reference bibliography file, as well as the PDF of the paper. 
 -   `scripts` contains the R scripts used to simulate, download, clean, test data, exploratory analysis, modelling and validation.
 
 
 ## Statement on LLM usage
 
-LLMs such as ChatGPT were used to provide procurement context, summarize figures, as well as for minor coding help. Full usage can be found on `other/llm_usage/usage.txt`.
+LLMs such as ChatGPT were used to provide procurement context, summarize figures, as well as some coding help. Full usage can be found on `other/llm_usage/usage.txt`.

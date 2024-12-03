@@ -6,7 +6,7 @@ author:
 thanks: "Code and data are available at: [https://github.com/eeeee-cmd/Procurement/](https://github.com/eeeee-cmd/Procurement/)."
 date: today
 date-format: long
-abstract: "This paper analyzes the federal procurement contracts awarded to Microsoft, focusing on trends in award values, contract categories, and the relationships between buyers and Microsoft. The analysis reveals that Microsoft dominates high-value contracts and demonstrates consistent partnerships with key government departments. This paper utilizes a linear model and random forest to predict the future contract amount trend for Microsoft. By examining these procurement dynamics, this paper providing insights into the broader implications of tech-industry participation in government procurement."
+abstract: "This paper analyzes federal procurement contracts awarded to Microsoft from 2020 to 2024, focusing on contract values, categories, and relationships between buyers and Microsoft. Multiple models were considered, with Bayesian modeling approach selected to predict Microsoft's contract amount. The analysis reveals Microsoft's dominant role in high-value contracts and its consistent partnerships with major government departments like National Defence. These findings provide informations evolving dynamics of federal procurement, raising questions about dependency and competitiveness."
 format: pdf
 toc: true
 toc-depth: 3
@@ -51,15 +51,15 @@ cleaned_data <- read_parquet(here::here("data/analysis_data/procurement_cleaned.
 
 # Introduction
 
-Government procurement serves as a critical avenue for public sector innovation, economic stimulus, and the fulfillment of strategic objectives. Within this landscape, the relationship between major technology providers and governmental bodies has become increasingly prominent. Among these, Microsoft has emerged as a pivotal partner in driving IT modernization and infrastructure development. Despite the growing reliance on tech giants, limited research has comprehensively examined the dynamics of such partnerships, particularly in the context of federal procurement contracts.
+Government procurement refers to the acquisition of goods, services, and construction services by the government, spanning a wide range of purchases from office supplies to materials and services needed for large-scale infrastructure projects [@gac]. This process enables public sector innovation, economic stimulus and fulfills strategic objectives. Within this landscape, the relationship between major technology providers and governmental bodies has become increasingly prominent. Among the key in government procurement, large technology firms like Microsoft have become vital partners in IT supporting. Despite the growing reliance on tech giants, limited research examines the dynamics of such partnerships, particularly in the context of federal procurement contracts.
 
-This paper addresses this gap by conducting a detailed analysis of federal procurement contracts awarded to Microsoft between 2020 and September 2024. Using publicly available data from the Investigative Journalism Foundation, the study explores trends in contract values, contract types, and Microsoft’s relationships with key government buyers. Emphasis is placed on identifying patterns in contract allocation and the implications of Microsoft's dominance in high-value contracts.
+This paper aims to address this gap by analyzing federal procurement contracts awarded to Microsoft from 2020 up to September 2024. Using publicly available data from Investigative Journalism Foundation [@IJF], the study focusing on contract values, categories, and Microsoft’s relationships with key government buyers. 
 
-The main estimand in this study is the amount of federal procurement contracts awarded to Microsoft. This metric is analyzed across multiple dimensions, including contract categories, duration, and partnerships, to quantify Microsoft's role in federal procurement comprehensively. The findings reveal that Microsoft plays a dominant role in IT infrastructure and modernization, securing the majority of high-value contracts and establishing consistent partnerships with departments such as Employment and Social Development Canada and National Defence. These insights highlight the broader implications of the private tech sector’s influence on public sector procurement, raising questions about competitiveness, dependency, and strategic alignment.
+The main estimand in this study is the amount of federal procurement contracts awarded to Microsoft. This metric is analyzed across multiple dimensions, including contract categories, duration, and partnerships, to quantify Microsoft's role in federal procurement. A Bayesian modeling approach is employed to predict future trends in the contract amounts, integrating prior knowledge with observed data to address uncertainty and provide more robust estimates. The findings reveal that Microsoft plays a dominant role in IT infrastructure and modernization, securing the majority of high-value contracts and establishing consistent partnerships with departments such as Employment and Social Development Canada and National Defense. These findings highlight the broader implications of the private tech sector’s influence on public sector procurement, raising questions about competitiveness, dependency, and strategic alignment.
 
 This study contributes to understand the procurement landscape, providing valuable information for policymakers, industry stakeholders, and academics. It underscores the importance of transparency, strategic planning, and balancing innovation with equity in government contracts.
 
-The structure of the paper is as follows: [@sec-data] outlines the data sources and variables considered, followed by the model setup in [@sec-modset] and justification. The results in [@sec-result] presents the key findings of the analysis, with a discussion on the implications. [@sec-discussion] then discusses potential limitations and suggestions for future research. [@sec-appx] provides additional detailed information about the data, model and methodology.
+The structure of the paper is as follows: [@sec-data] outlines the data sources and variables considered, followed by the model setup and justificationa in [@sec-mod]. The results in [@sec-result] presents the key findings of the analysis, with a discussion on the implications. [@sec-discussion] then discusses potential limitations of data, model and suggestions for future research. [@sec-data-details] provides additional data detailed informations about data, model in [@sec-model-details] and methodology in [@sec-meth-details].
 
 # Data {#sec-data}
 
@@ -83,9 +83,9 @@ After imported the raw dataset using `read_csv` function, I first select specifi
 
 For any missing data (NA) of StartDate, I infer the StartDate from the AwardDate to replace the missing value as the value of AwardDate. Then I standardize the date format of all date related datas for proper parsing by using `mdy()` function and change the dollar format of amount into numeric numbers for future calculation purposes. Due to the error with unknown reason that EndDate is before StartDate or AwardDate, those entries were excluded from this paper. 
 
-PreparatoryPhase, PhaseDays, and ContractDays variables were created for the purpose of analyzing preparatory phase and performance phase corresponding to each contract. PreparatoryPhase calculates the days from AwardDate to StartDate. ContractDays calculates the days from StartDate to EndDate. PhaseDays take the absolute value of PreparatoryPhase because of the minor effect of either prepare before contract being awarded or prepare after contract being awarded. Last but not least, I created a new variable called ContractType, which categorizes the contracts based on keywords.
+PreparatoryPhase, PhaseDays, and ContractDays variables were created for the purpose of analyzing preparatory phase and performance phase corresponding to each contract. PreparatoryPhase calculates the days from AwardDate to StartDate. ContractDays calculates the days from StartDate to EndDate. PhaseDays take the absolute value of PreparatoryPhase because of the minor effect of either prepare before contract being awarded or prepare after contract being awarded. I also created new variables called ContractType and BuyerCleaned, which categorizes the most common buyers and contracts based on keywords.
 
-This dataset contains only two entries for 2019 federal procurement contracts awarded to Microsoft. So, I filter out the contracts before 2020 to focus on the records between 2020 and September 2024 as desired. Then I check the character type variables, Supplier and Contract, using `table()` function for the purpose of manipulating input error. I standardize the supplier's name which combine the similar name due to capitalization or some notation differences, and format them with first letter of each word capitalized.
+This dataset contains only two entries for 2019 federal procurement contracts awarded to Microsoft. So, I filter out the contracts before 2020 to focus on the records between 2020 and September 2024 as desired. By summary the data set, I noticed a significant outlier with value of $102,260,150, which largely impact the outcome. So, I decide to drop this entry. Then I check the character type variables, Supplier and Contract, using `table()` function for the purpose of manipulating input error. I standardize the supplier's name which combine the similar name due to capitalization or some notation differences, and format them with first letter of each word capitalized.
 
 After completing the cleaning, we saved the final dataset in both Parquet and CSV formats for later analysis.
 
@@ -179,7 +179,7 @@ summary_table <- cleaned_data %>%
     TotalAmount = sum(Amount),  # Calculate the total contract value
     AvgAmount = mean(Amount)    # Calculate the average contract value
   ) %>%
-  filter(Count > 15) %>%
+  filter(Count > 25) %>%
   arrange(desc(Count))  # Arrange in descending order based on Count
 
 # Format the TotalAmount column with dollar format
@@ -223,7 +223,7 @@ ggplot(cleaned_data, aes(x = PhaseDays)) +
   theme_minimal()
 ```
 
-**ContractDays** is a numeric variable which is the days between StartDate and EndDate. [@fig-contract] shows the distribution of performance period. The right skewed distribution in [@fig-contract] indicates that the majority of contract duration is within a year. There is an over 5 years performance period in [@fig-contract] implies a massive project that requires extensive preparation.
+**ContractDays** is a numeric variable which is the days between $StartDate$ and $EndDate$. [@fig-contract] shows the distribution of performance period. The right skewed distribution in [@fig-contract] indicates that the majority of contract duration is within a year. There is an over 5 years performance period in [@fig-contract] implies a massive project that requires extensive preparation.
 
 ```{r}
 #| label: fig-contract
@@ -248,9 +248,11 @@ ggplot(cleaned_data, aes(x = ContractDays)) +
   theme_minimal()
 ```
 
+The correlation matrix in [@fig-cor] visualizes the relationships between key numerical predictor variables and the outcome variable, $Amount$. [@fig-cor] shows correlations include a weak negative correlations between $PreparatoryPhase$ and $ContractDays$; and weak positive correlations between predictors and $Amount$.
+
 ```{r}
 #| label: fig-cor
-#| fig-cap: This correlation matrix visualizes the relationships between key numerical predictor variables and the outcome variable, Amount. The figure shows correlations include a weak negative correlations between PreparatoryPhase and ContractDays; and weak positive correlations between predictors and Amount.
+#| fig-cap: Correlation matrix showing the relationships between numerical predictor variables and the outcome Amount variable
 #| echo: false
 #| eval: true
 #| warning: false
@@ -270,38 +272,7 @@ ggcorrplot(correlation_matrix, lab = TRUE) +
   )
 ```
 
-```{r}
-#| label: fig-box
-#| fig-cap: The Boxplots shows the relationship of ContractDays and PhaseDays with ContractType. 
-#| fig-subcap: ["Contract Duration in each Contract Type","Phase Duration in each Contract Type"]
-#| echo: false
-#| warning: false
-#| layout-nrow: 2
-
-# Clean and transform the data
-data <- cleaned_data %>%
-  mutate(
-    ContractType = gsub("Related", "", ContractType), # Remove "Related"
-    ContractType = str_wrap(gsub("/", " or ", ContractType), width = 10) # Wrap long labels
-  )
-
-# First graph: ContractType vs. ContractDays
-ggplot(data, aes(x = ContractType, y = ContractDays)) +
-  geom_boxplot() +
-  theme_minimal() +
-  labs(x = "Contract Type", y = "Contract Duration") +
-  theme(axis.text.x = element_text(size = 6))
-
-# Second graph: ContractType vs. PhaseDays
-ggplot(data, aes(x = ContractType, y = PhaseDays)) +
-  geom_boxplot() +
-  theme_minimal() +
-  labs(x = "Contract Type", y = "Phase Duration") +
-  theme(axis.text.x = element_text(size = 6))
-
-```
-
-# Model
+# Model {#sec-mod}
 
 ## Model Set-Up {#sec-modset}
 
@@ -345,10 +316,43 @@ While the model presents some valuable observations of Microsoft’s federal pro
 
 ## Data
 
+The boxplot @fig-box-1 shows the Contract Duration across various Contract Types. As we can see in @fig-box-1, Computer Services and Consulting contracts tend to have longer durations. This suggests these contracts often involve more complex or ongoing services that require extended timelines. In contrast, License/Maintenance Fees and Software contracts show shorter durations, with tighter interquartile ranges and lower medians, indicating that these contracts are likely less complex and are typically limited to a defined time period. 
+
+The boxplot @fig-box-2 shows the Phase Duration for each Contract Type. @fig-box-2 reveals that certain contract types, such as Consulting and Distributed Computing Environment, have longer preparatory phases, with a higher median and a larger spread. This suggests these contracts require more time for negotiation, planning, or administrative procedures before the actual work begins. On the other hand, Computer Services and License/Maintenance Fees contracts exhibit shorter preparatory phases, as evidenced by the lower medians and narrower interquartile ranges in @fig-box-2. This suggests that these contracts are more straightforward and may require less preparation before implementation.
+```{r}
+#| label: fig-box
+#| fig-cap: The Boxplots shows the relationship of ContractDays and PhaseDays with ContractType. 
+#| fig-subcap: ["Contract Duration in each Contract Type","Phase Duration in each Contract Type"]
+#| echo: false
+#| warning: false
+#| layout-nrow: 2
+
+# Clean and transform the data
+data <- cleaned_data %>%
+  mutate(
+    ContractType = gsub("Related", "", ContractType), # Remove "Related"
+    ContractType = str_wrap(gsub("/", " or ", ContractType), width = 10) # Wrap long labels
+  )
+
+# First graph: ContractType vs. ContractDays
+ggplot(data, aes(x = ContractType, y = ContractDays)) +
+  geom_boxplot() +
+  theme_minimal() +
+  labs(x = "Contract Type", y = "Contract Duration") +
+  theme(axis.text.x = element_text(size = 6))
+
+# Second graph: ContractType vs. PhaseDays
+ggplot(data, aes(x = ContractType, y = PhaseDays)) +
+  geom_boxplot() +
+  theme_minimal() +
+  labs(x = "Contract Type", y = "Phase Duration") +
+  theme(axis.text.x = element_text(size = 6))
+```
+
 
 ```{r}
 #| label: fig-date
-#| fig-cap: The heatmap ....
+#| fig-cap: Heatmap of Contracts by Four-Month Periods (2020–2024). The heatmap shows the frequency of federal procurement contracts awarded to Microsoft in each four-month period, with darker colors representing higher contract frequencies.
 #| echo: false
 #| eval: true
 #| warning: false
@@ -364,18 +368,18 @@ data <- cleaned_data %>%
       )
   )
 
-# Count the number of contracts in each four-month period
+# Count the number of contracts for each four-month period and year
 contract_counts <- data %>%
-  group_by(Period) %>%
-  summarise(Count = n())
+  mutate(Year = as.factor(Year)) %>%
+  group_by(Year, Period) %>%
+  summarise(Count = n(), .groups = "drop")
 
 # Heatmap plot
-ggplot(contract_counts, aes(x = Period, y = Count, fill = Count)) +
-  geom_tile() +
-  scale_fill_gradient(low = "lightblue", high = "darkblue") +
-  labs(x = "Year-Period", y = "Frequency (Contract Count)", title = "Heatmap of Contracts by Four-Month Periods") +
-  theme_minimal() +
-  theme(axis.text.y = element_text(angle = 0))  # Keep y-axis labels readable
+ggplot(contract_counts, aes(x = Period, y = Year, fill = Count)) +
+  geom_tile(color = "white") +  # Add color between tiles for better visibility
+  scale_fill_gradient(low = "lightblue", high = "darkblue") +  # Adjust color scale
+  labs(x = "Four-Month Period", y = "Year", title = "Heatmap of Contracts by Four-Month Periods") +
+  theme_minimal()
 ```
 
 
@@ -408,10 +412,6 @@ ggplot(data, aes(x = StartDate, y = EndDate)) +
 ```
 
 ## Model
-R-squared, adjusted R-squared 
-
-tests (e.g. VIF, AIC, BIC).
-
 
 Our results are summarized in @tbl-modelresults.
 
@@ -485,7 +485,7 @@ Data quality and consistency issues are also of concern. The anomalies identifie
 # Appendix {-}
 
 
-# Additional data details
+# Additional data details {#sec-data-details}
 
 # Model details {#sec-model-details}
 
@@ -666,7 +666,7 @@ summary(rf_model, output = "kableExtra")
 
 ```
 
-# Methodology
+# Methodology {#sec-meth-details}
 
 The methodology employed in this study involves analyzing federal procurement contracts awarded to Microsoft, leveraging data from two primary sources: Public Services and Procurement Canada (PSPC) and the Treasury Board of Canada Secretariat (TBS). These two datasets provide information on government procurement, but they come with distinct limitations and reporting structures [@ProcurementSources].
 

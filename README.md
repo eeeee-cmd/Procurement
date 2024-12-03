@@ -18,7 +18,7 @@ The repo is structured as:
 -   `data/simulated_data` contains the simulated data that were constructed.
 -   `models` contains fitted models and model API. 
 -   `other` contains details about LLM chat interactions and sketches.
--   `other/shiny_app` contains the shiny application.
+-   `other/shiny_app` contains the Shiny Application.
 -   `paper` contains the files used to generate the paper, including the Quarto document and reference bibliography file, as well as the PDF of the paper. 
 -   `scripts` contains the R scripts used to simulate, download, clean, test data, exploratory analysis, modelling and validation.
 

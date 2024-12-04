@@ -63,7 +63,7 @@ A Bayesian modeling approach is employed to predict future trends in the contrac
 
 This study contributes to understand the procurement landscape, providing valuable information for policymakers, industry stakeholders, and academics. The study  underscores the importance of transparency, strategic planning, and balancing innovation with equity in government contracts.
 
-The structure of the paper is as follows: [@sec-data] outlines the data sources and variables considered, followed by the model setup and justifications in [@sec-mod]. The results in [@sec-result] presents the key findings of the analysis, with a discussion on the implications. [@sec-discussion] then discusses potential limitations of data, model and suggestions for future research. The appendix provides additional detailed information about models in [@sec-model-details] and methodology in [@sec-meth-details].
+The structure of the paper is as follows: [@sec-data] outlines the data sources and variables considered, followed by the model setup and justifications in [@sec-mod]. The results in [@sec-result] presents the key findings of the analysis, with a discussion on the implications. [@sec-discussion] then discusses potential limitations of data, model and suggestions for future research. The appendix provides additional detailed information about data visualization in [@sec-data-details] models in [@sec-model-details] and methodology in [@sec-meth-details].
 
 # Data {#sec-data}
 
@@ -96,47 +96,6 @@ After completing the cleaning, we saved the final dataset in both Parquet and CS
 
 The main outcome variable of interest is the amount of federal procurement contracts awarded to Microsoft. This variable is needed to represent the financial magnitude of Microsoft with the federal government and the measurement of evaluating procurement dynamics. [@fig-amount] is a histogram, which illustrates the annual total amounts of federal procurement contracts awarded to Microsoft from 2020 to 2024 (up to September). [@fig-amount] shows a generally increasing trend of the total value of each year's contract. This may reflect the growth of technology in government operations, including software, cloud solutions, and IT infrastructure. The amount in 2023 doubles the amount in 2021, which suggests a heightened investment in federal procurement funding and large-scale projects. 
 
-```{r}
-#| label: fig-amount
-#| fig-cap: The histogram shows the distribution of the total amount ($million) of each year's federal contract (since 2020).
-#| echo: false
-#| eval: true
-#| warning: false
-#| message: false
-
-# Extract year from AwardDate and filter the year from 2020 to 2024
-year_data <- cleaned_data %>%
-  mutate(
-    Year = as.integer(format(as.Date(AwardDate), "%Y"))
-    )
-
-# Sum the total amount group by year
-yearly_amount <- year_data %>%
-  group_by(Year) %>%
-  summarize(TotalAmount = sum(Amount, na.rm = TRUE)) %>%
-  mutate(TotalAmount = round(TotalAmount / 1000000)) # Convert to millions
-
-# Plot the amount in each year
-ggplot(yearly_amount, aes(x = as.factor(Year), y = TotalAmount)) +
-  geom_bar(stat = "identity", fill = "darkorange", color = "black", alpha = 0.7) +
-  labs(
-    title = "Total Contract Amounts by Year for Microsoft",
-    x = "Year",
-    y = "Total Amount ($million)"
-  ) +
-  theme_minimal() +
-  theme(
-    axis.text.y = element_text(size = 8), 
-    axis.title.y = element_text(size = 10),
-    axis.title.x = element_text(size = 10),
-    axis.text.x = element_text(size = 8),
-    plot.title = element_text(size = 12)
-    )
-
-```
-
-\newpage
-
 ## Predictor Variables
 
 In this analysis, several key predictors were identified to evaluate procurement data effectively. 
@@ -145,13 +104,13 @@ In this analysis, several key predictors were identified to evaluate procurement
 
 ```{r}
 #| label: tbl-contract
-#| tbl-cap: The table summarizes the contract type which has over 25 contracts with the total dollar amount, and average dollar amount per contract. 
+#| tbl-cap: Summarizes the contract type which has over 30 contracts with the total dollar amount, and average dollar amount per contract. 
 #| echo: false
 #| eval: true
 #| warning: false
 #| message: false
 
-# Summarize the data and filter buyers with counts >= 25
+# Summarize the data and filter buyers with counts >= 30
 summary_table <- cleaned_data %>%
   group_by(ContractType) %>%
   summarise(
@@ -159,7 +118,7 @@ summary_table <- cleaned_data %>%
     TotalAmount = sum(Amount),  # Calculate the total contract value
     AvgAmount = mean(Amount)    # Calculate the average contract value
   ) %>%
-  filter(Count > 25) %>%
+  filter(Count > 30) %>%
   arrange(desc(Count))  # Arrange in descending order based on Count
 
 # Format the TotalAmount column with dollar format
@@ -174,17 +133,17 @@ summary_table %>%
 
 ```
 
-**Buyer** is a character-type variable representing the federal government department or agency that initiates and awards the contract. [@tbl-buyer] shows the buyer who has over 25 contracts with Microsoft, which identifies key partners and understands the distribution of contracts across sectors. The table highlights that Employment and Social Development Canada (ESDC) and National Defence account for over 50% of Microsoft's total awards.
+**Buyer** is a character-type variable representing the federal government department or agency that initiates and awards the contract. [@tbl-buyer] shows the buyer who has over 30 contracts with Microsoft, which identifies key partners and understands the distribution of contracts across sectors. The table highlights that Employment and Social Development Canada (ESDC) and National Defence account for over 50% of Microsoft's total awards.
 
 ```{r}
 #| label: tbl-buyer
-#| tbl-cap: The table summarizes top 10 buyers with contract count, total dollar amount, and average dollar amount per contract. 
+#| tbl-cap: Summarizes the buyers who has over 30 contract counts, with total dollar amount and average dollar amount per contract. 
 #| echo: false
 #| eval: true
 #| warning: false
 #| message: false
 
-# Summarize the data and filter buyers with counts >= 25
+# Summarize the data and filter buyers with counts >= 30
 summary_table <- cleaned_data %>%
   group_by(Buyer) %>%
   summarise(
@@ -192,7 +151,7 @@ summary_table <- cleaned_data %>%
     TotalAmount = sum(Amount),  # Calculate the total contract value
     AvgAmount = mean(Amount)    # Calculate the average contract value
   ) %>%
-  filter(Count > 25) %>%
+  filter(Count > 30) %>%
   arrange(desc(Count))  # Arrange in descending order based on Count
 
 # Format the TotalAmount column with dollar format
@@ -211,37 +170,13 @@ This dataset contains a series of date-type variables capturing key milestones i
 
 **PhaseDays** is a numeric variable that demonstrates the days between AwardDate and StartDate. In [@fig-preparatory], there is a high concentration of around 0 indicates rapid procurement processes or emergency software services. [@fig-preparatory] also shows a few outlying contracts with a mobilization period of over one year. These long mobilization periods reflect issues such as delays in the procurement process, a long negotiation period, or administrative approvals.
 
-```{r}
-#| label: fig-preparatory
-#| fig-cap: The histogram shows the distribution of preparatory period.
-#| echo: false
-#| eval: true
-#| warning: false
-#| message: false
-
-# create plot for Distribution of Poll Scores by candidate
-ggplot(cleaned_data, aes(x = PhaseDays)) +
-  geom_histogram(
-    bins = 30,
-    fill = "salmon",
-    color = "black",
-    alpha = 0.7
-  ) +
-  labs(
-    x = "Preparatory Phase (day)",
-    y = "Frequency"
-  ) +
-  theme_minimal()
-```
-
-\newpage
-
 **ContractDays** is a numeric variable which is the days between $StartDate$ and $EndDate$. [@fig-contract] shows the distribution of the performance period. The right-skewed distribution in [@fig-contract] indicates that the majority of contract duration is within a year. There is an over 5 years performance period in [@fig-contract] implies a massive project that requires extensive preparation.
 
 The correlation matrix in [@fig-cor] visualizes the relationships between key numerical predictor variables and the outcome variable, $Amount$. [@fig-cor] shows correlations include a weak negative correlations between $PreparatoryPhase$ and $ContractDays$; and weak positive correlations between predictors and $Amount$.
 
 More information about data analysis and figures are displayed in @sec-data-visualization.
 
+\newpage
 
 # Model {#sec-mod}
 
@@ -282,7 +217,11 @@ The model takes several assumptions, including linear relationship between predi
 
 While the model presents some valuable observations of Microsoft’s federal procurement contracts, there are some model limitations including prior function selection, data quality, potential for endogeneity, generalizability, and unobserved variables. These limitations will be discussed more detailed in [@sec-discussion-model].
 
+\newpage
+
 # Results {#sec-result}
+
+The table compares two Bayesian models: the full model, `Bayesian Model_Full`, which includes all predictors (e.g., $Contract$, $Buyer$, $ContractDays$, and $PhaseDays$); and a simplified model, `Bayesian Model`, that adjusts for reduced predictors' complexity (e.g., $ContractType$, $BuyerCleaned$, $ContractDays$, and $PhaseDays$). Coefficients represent the estimated effect of each predictor on the contract amount, with credible intervals reflecting uncertainty. The results highlight the influence of contract-specific and buyer-specific variables on procurement amounts.
 
 The results are summarized in @tbl-modelresults, including R², Log-Likelihood (Log.Lik.), Expected Log Pointwise Predictive Density (ELPD), Leave-One-Out Information Criterion (LOOIC), Watanabe-Akaike Information Criterion (WAIC), and Root Mean Square Error (RMSE).
 
@@ -320,17 +259,15 @@ modelsummary(
   kable_styling(latex_options = c("striped", "scale_down"))
 ```
 
-The table compares two Bayesian models: the full model, `Bayesian Model_Full`, which includes all predictors (e.g., $Contract$, $Buyer$, $ContractDays$, and $PhaseDays$); and a simplified model, `Bayesian Model`, that adjusts for reduced predictors' complexity (e.g., $ContractType$, $BuyerCleaned$, $ContractDays$, and $PhaseDays$). Coefficients represent the estimated effect of each predictor on the contract amount, with credible intervals reflecting uncertainty. The results highlight the influence of contract-specific and buyer-specific variables on procurement amounts.
+The Full Bayesian Model explains 28.9% of the variance in contract amounts, as indicated by the $R^2$ value of 0.289. In comparison, the Reduced Model explains only 8.2% of the variance, highlighting the contribution of additional predictors (e.g., specific buyers and contract names) in improving the model's explanatory power. However, both models show low adjusted $R^2$ values, suggesting that the models do not capture a large portion of the unexplained variance in the data. This points to the need for further refinement, potentially by incorporating additional factors that influence procurement decisions.
 
-The Full Bayesian Model has an $R^2$ of 0.289, indicating that approximately 28.9% of the variance in the contract amount is explained by the model. In comparison, the Reduced Bayesian Model explains only 8.2% of the variance in the contract amount, suggesting that the inclusion of additional predictors (specific buyers and contract names) improves the model’s explanatory power. However, both models have very low adjusted $R^2$, which suggests that the model is not capturing much of the unexplained variance in the data.
+The Full Bayesian Model has a Log-Likelihood of $-15,351.795$ and an ELPD of $-15,519.3$, while the Reduced Model's Log-Likelihood is $-15,398.022$ and ELPD is $-15,444.8$. The Full Model performs slightly better, as indicated by its higher Log-Likelihood and ELPD values. Both of these metrics suggest that the Full Model fits the data more accurately, as higher Log-Likelihood and ELPD values correspond to better data fit and prediction accuracy.
 
-The Full Bayesian Model has a Log-Likelihood of $-15,351.795$ and an ELPD of $-15,519.3$, while the Reduced Model has a Log-Likelihood of $-15,398.022$ and an ELPD of $-15,444.8$. These values suggest that the Full Bayesian Model fits the data slightly better than the Reduced Model, as it produces higher Log-Likelihood and ELPD values.
- 
-The Full Bayesian Model has a lower LOOIC ($31,038.7$) and WAIC ($30,992.3$) compared to the Reduced Model, indicating that the Full Bayesian Model is better at out-of-sample predictive performance. Lower values of LOOIC and WAIC are indicative of better model fit and predictive accuracy.
+The Full Bayesian Model has a lower LOOIC ($31,038.7$) and WAIC ($30,992.3$) compared to the Reduced Model, suggesting better out-of-sample predictive performance. LOOIC and WAIC are used to estimate the out-of-sample prediction accuracy, with lower values indicating better model performance. These results further support the conclusion that the Full Model is superior in predicting contract amounts.
 
-The Full Bayesian Model has a lower RMSE ($2,714,467.04$) compared to the Reduced Model ($2,971,135.35$), indicating better predictive performance. The lower RMSE value suggests that the Full Bayesian Model is more accurate in predicting the total contract amount.
+The Full Bayesian Model also outperforms the Reduced Model in terms of RMSE, with a value of $2,714,467.04$ compared to $2,971,135.35$ for the Reduced Model. The lower RMSE indicates that the Full Model is more accurate in predicting the total contract amount, making it a better tool for forecasting future contract values.
 
-More results about the Bayesian model can be found in @sec-model-details.
+More results about the Bayesian model can be found in @sec-model-details. This includes further exploration of model convergence, posterior predictive checks, and alternative specifications that could be explored in future research.
 
 \newpage
 
@@ -370,9 +307,71 @@ Finally, exploring more complex models, such as non-linear regression or machine
 # Additional Data details {#sec-data-details}
 
 ## Graphs {#sec-data-visualization}
+
+```{r}
+#| label: fig-amount
+#| fig-cap: Total contract amounts awarded to Microsoft ($million) by year (since 2020). The data is grouped by award year, highlighting an increasing trends in Microsoft's federal contracts.
+#| echo: false
+#| eval: true
+#| warning: false
+#| message: false
+
+# Extract year from AwardDate and filter the year from 2020 to 2024
+year_data <- cleaned_data %>%
+  mutate(
+    Year = as.integer(format(as.Date(AwardDate), "%Y"))
+    )
+
+# Sum the total amount group by year
+yearly_amount <- year_data %>%
+  group_by(Year) %>%
+  summarize(TotalAmount = sum(Amount, na.rm = TRUE)) %>%
+  mutate(TotalAmount = round(TotalAmount / 1000000)) # Convert to millions
+
+# Plot the amount in each year
+ggplot(yearly_amount, aes(x = as.factor(Year), y = TotalAmount)) +
+  geom_bar(stat = "identity", fill = "darkorange", color = "black", alpha = 0.7) +
+  labs(
+    title = "Total Contract Amounts by Year for Microsoft",
+    x = "Year",
+    y = "Total Amount ($million)"
+  ) +
+  theme_minimal() +
+  theme(
+    axis.text.y = element_text(size = 8), 
+    axis.title.y = element_text(size = 10),
+    axis.title.x = element_text(size = 10),
+    axis.text.x = element_text(size = 8),
+    plot.title = element_text(size = 12)
+    )
+```
+
+```{r}
+#| label: fig-preparatory
+#| fig-cap: Distribution of preparatory period. This shows the frequency of contracts grouped by the number of days spent in the preparatory phase, illustrating the variability in preparatory phase durations across the dataset.
+#| echo: false
+#| eval: true
+#| warning: false
+#| message: false
+
+# create plot for Distribution of Poll Scores by candidate
+ggplot(cleaned_data, aes(x = PhaseDays)) +
+  geom_histogram(
+    bins = 30,
+    fill = "salmon",
+    color = "black",
+    alpha = 0.7
+  ) +
+  labs(
+    x = "Preparatory Phase (day)",
+    y = "Frequency"
+  ) +
+  theme_minimal()
+```
+
 ```{r}
 #| label: fig-contract
-#| fig-cap: The histogram shows the distribution of performance period, which demonstrates the days between start and end date.
+#| fig-cap: Distribution of contract performance phase durations. The histogram shows the frequency of contracts grouped by the number of days in the performance phase, which demonstrates the days between start and end date.
 #| echo: false
 #| eval: true
 #| warning: false
@@ -395,7 +394,7 @@ ggplot(cleaned_data, aes(x = ContractDays)) +
 
 ```{r}
 #| label: fig-cor
-#| fig-cap: Correlation matrix showing the relationships between numerical predictor variables and the outcome Amount variable
+#| fig-cap: Correlation matrix of numeric variables. This shows a weak negative correlations between $PreparatoryPhase$ and $ContractDays$; and weak positive correlations between predictors and $Amount$.
 #| echo: false
 #| eval: true
 #| warning: false
@@ -415,9 +414,13 @@ ggcorrplot(correlation_matrix, lab = TRUE) +
   )
 ```
 
+\newpage
+
+## Data Visualization Analysis
+
 ```{r}
 #| label: fig-box
-#| fig-cap: The Boxplots shows the relationship of ContractDays and PhaseDays with ContractType. 
+#| fig-cap: The relationship of ContractDays and PhaseDays by ContractType. 
 #| fig-subcap: ["Contract Duration in each Contract Type","Phase Duration in each Contract Type"]
 #| echo: false
 #| warning: false
@@ -445,10 +448,6 @@ ggplot(data, aes(x = ContractType, y = PhaseDays)) +
   theme(axis.text.x = element_text(size = 6))
 ```
 
-\newpage
-
-## Data Visualization Analysis
-
 The boxplot @fig-box-1 shows the Contract Duration across various Contract Types. As we can see in @fig-box-1, Computer Services, and Consulting contracts tend to have longer durations. This suggests these contracts often involve more complex or ongoing services that require extended timelines. In contrast, License/Maintenance Fees and Software contracts show shorter durations, with tighter interquartile ranges and lower medians, indicating that these contracts are likely less complex and are typically limited to a defined period. 
 
 The boxplot @fig-box-2 shows the Phase Duration for each Contract Type. @fig-box-2 highlights Consulting and Distributed Computing Environments have longer preparatory phases, with a higher median and a larger spread. This suggests these contracts require more time for negotiation, planning, or administrative procedures before the actual work begins. On the other hand, Computer Services and License/Maintenance Fees contracts exhibit shorter preparatory phases, as evidenced by the lower medians and narrower interquartile ranges in @fig-box-2. This suggests that these contracts are more straightforward and may require less preparation before implementation.
@@ -458,7 +457,7 @@ A noticeable decline occurs in 2024 because the data only updates until Septembe
 
 ```{r}
 #| label: fig-date
-#| fig-cap: Heatmap of Contracts by Four-Month Periods (2020–2024). The heatmap shows the frequency of federal procurement contracts awarded to Microsoft in each four-month period, with darker colors representing higher contract frequencies.
+#| fig-cap: The distribution of federal contracts by Four-Month Periods (2020–2024). The heatmap shows the frequency of federal procurement contracts awarded to Microsoft in each four-month period, with darker colors representing higher contract frequencies.
 #| echo: false
 #| eval: true
 #| warning: false
@@ -492,7 +491,7 @@ The scatter plot @fig-mobilization shows the relationship between the Award Date
 
 ```{r}
 #| label: fig-mobilization
-#| fig-cap: The scatter plot shows the relationship between Award Date and Start Date for the top 10 federal procurement contracts types. Each point represents a contract, with colors indicating different contract types. The plot helps to identify trends in the timing between contract award and commencement.
+#| fig-cap: The relationship between Award Date and Start Date for the top 10 federal procurement contracts types. Each point represents a contract, with colors indicating different contract types. The plot helps to identify trends in the timing between contract award and commencement.
 #| echo: false
 #| eval: true
 #| warning: false
@@ -516,7 +515,7 @@ The scatter plot @fig-performance shows the diversity in contract durations acro
 
 ```{r}
 #| label: fig-performance
-#| fig-cap: The scatter plot shows the relationship between Start Date and End Date for the top 10 Microsoft’s federal procurement contracts types. Each point represents a contract, and the color reflects the contract type. This visualization provides insights into the duration of the contracts and any deviations from expected timelines.
+#| fig-cap: The relationship between Start Date and End Date for the top 10 Microsoft’s federal procurement contracts types. Each point represents a contract, and the color reflects the contract type. This visualization provides insights into the duration of the contracts and any deviations from expected timelines.
 #| echo: false
 #| eval: true
 #| warning: false

@@ -16,7 +16,7 @@ The repo is structured as:
 -   `data/raw_data` contains the raw data as obtained from https://theijf.org/procurement/supplier/microsoft?region=.
 -   `data/analysis_data` contains the cleaned datasets that were constructed.
 -   `data/simulated_data` contains the simulated data that were constructed.
--   `models` contains fitted models and model API. 
+-   `models` contains fitted models. 
 -   `other` contains details about LLM chat interactions and sketches.
 -   `other/shiny_app` contains the Shiny Application.
 -   `paper` contains the files used to generate the paper, including the Quarto document and reference bibliography file, as well as the PDF of the paper. 

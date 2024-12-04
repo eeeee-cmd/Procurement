@@ -1,12 +1,12 @@
 ---
 title: "Procurement Dynamics: Analyzing Federal Contract Awards to Microsoft"
-subtitle: "Trends of Microsoft’s Future in Canadian Government from 2020"
+subtitle: "Microsoft's Dominance in IT Procurement and Relationships with Government"
 author: 
   - Deyi Kong
 thanks: "Code and data are available at: [https://github.com/eeeee-cmd/Procurement/](https://github.com/eeeee-cmd/Procurement/)."
 date: today
 date-format: long
-abstract: "This paper analyzes federal procurement contracts awarded to Microsoft from 2020 to 2024, focusing on contract values, categories, and relationships between buyers and Microsoft. Multiple models were considered, with Bayesian modeling approach selected to predict Microsoft's contract amount. The analysis reveals Microsoft's dominant role in high-value contracts and its consistent partnerships with major government departments like National Defence. These findings provide informations evolving dynamics of federal procurement, raising questions about dependency and competitiveness."
+abstract: "This paper analyzes federal procurement contracts awarded to Microsoft from 2020 to 2024, focusing on contract values, categories, and relationships with key government buyers. A Bayesian modeling approach was employed to predict contract amounts. The study highlights Microsoft's significant role in securing high-value contracts and maintaining steady partnerships with major departments such as National Defence. These findings provide important trends in federal procurement, drawing attention to the potential risks of dependency on a single supplier and challenges to competition."
 format: pdf
 toc: true
 toc-depth: 3
@@ -52,14 +52,15 @@ cleaned_data <- read_parquet(here::here("data/analysis_data/procurement_cleaned.
 
 # Introduction
 
-Government procurement refers to the acquisition of goods, services, and construction services by the government, spanning a wide range of purchases from office supplies to materials and services needed for large-scale infrastructure projects [@gac]. This process enables public sector innovation, economic stimulus and fulfills strategic objectives. Within this landscape, the relationship between major technology providers and governmental bodies has become increasingly prominent. Among the key in government procurement, large technology firms like Microsoft have become vital partners in IT supporting. Despite the growing reliance on tech giants, limited research examines the dynamics of such partnerships, particularly in the context of federal procurement contracts.
+Government procurement involves the acquisition of goods and services. The construction services by the government span a wide range of purchases, from office supplies to materials and services needed for large-scale infrastructure projects [@gac]. This process enables public innovation, economic stimulus, and fulfills strategic objectives. Within this landscape, the relationship between technology providers and government operations has become increasingly prominent. Despite the growing reliance on tech giants, limited research examines the dynamics of such partnerships, particularly in the context of federal procurement contracts.
 
-This paper aims to address this gap by analyzing federal procurement contracts awarded to Microsoft from 2020 up to September 2024. Using publicly available data from Investigative Journalism Foundation [@IJF], the study focusing on contract values, categories, and Microsoft’s relationships with key government buyers. 
+This paper aims to address this gap by analyzing federal procurement contracts awarded to Microsoft from 2020 up to September 2024. Using publicly available data from the Investigative Journalism Foundation [@IJF], the study focuses on contract values, categories, and Microsoft’s relationships with key government buyers. 
 
 The main estimand in this study is the amount of federal procurement contracts awarded to Microsoft. This metric is analyzed across multiple dimensions, including contract categories, duration, and partnerships, to quantify Microsoft's role in federal procurement. 
-A Bayesian modeling approach is employed to predict future trends in the contract amounts, integrating prior knowledge with observed data to address uncertainty and provide more robust estimates. The findings reveal that Microsoft plays a dominant role in IT infrastructure and modernization, securing the majority of high-value contracts and establishing consistent partnerships with departments such as Employment and Social Development Canada and National Defence. These findings highlight the broader implications of the private tech sector’s influence on public sector procurement, raising questions about competitiveness, dependency, and strategic alignment.
 
-This study contributes to understand the procurement landscape, providing valuable information for policymakers, industry stakeholders, and academics. It underscores the importance of transparency, strategic planning, and balancing innovation with equity in government contracts.
+A Bayesian modeling approach is employed to predict future trends in the contract amounts, integrating prior knowledge with observed data to address uncertainty and provide more robust estimates. The findings reveal that Microsoft plays a dominant role in IT infrastructure and modernization, securing most high-value contracts and establishing consistent partnerships with departments such as Employment and Social Development Canada and National Defence. These findings highlight the broader implications of the private tech sector’s influence on public sector procurement, raising questions about competitiveness, dependency, and strategic alignment.
+
+This study contributes to understand the procurement landscape, providing valuable information for policymakers, industry stakeholders, and academics. The study  underscores the importance of transparency, strategic planning, and balancing innovation with equity in government contracts.
 
 The structure of the paper is as follows: [@sec-data] outlines the data sources and variables considered, followed by the model setup and justifications in [@sec-mod]. The results in [@sec-result] presents the key findings of the analysis, with a discussion on the implications. [@sec-discussion] then discusses potential limitations of data, model and suggestions for future research. The appendix provides additional detailed information about models in [@sec-model-details] and methodology in [@sec-meth-details].
 

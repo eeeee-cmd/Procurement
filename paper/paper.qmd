@@ -238,56 +238,10 @@ ggplot(cleaned_data, aes(x = PhaseDays)) +
 
 **ContractDays** is a numeric variable which is the days between $StartDate$ and $EndDate$. [@fig-contract] shows the distribution of the performance period. The right-skewed distribution in [@fig-contract] indicates that the majority of contract duration is within a year. There is an over 5 years performance period in [@fig-contract] implies a massive project that requires extensive preparation.
 
-```{r}
-#| label: fig-contract
-#| fig-cap: The histogram shows the distribution of performance period, which demonstrates the days between start and end date.
-#| echo: false
-#| eval: true
-#| warning: false
-#| message: false
-
-# create plot for Distribution of Poll Scores by candidate
-ggplot(cleaned_data, aes(x = ContractDays)) +
-  geom_histogram(
-    bins = 15,
-    fill = "steelblue",
-    color = "black",
-    alpha = 0.7
-  ) +
-  labs(
-    x = "Contract Performance Phase (day)",
-    y = "Frequency"
-  ) +
-  theme_minimal()
-```
-
 The correlation matrix in [@fig-cor] visualizes the relationships between key numerical predictor variables and the outcome variable, $Amount$. [@fig-cor] shows correlations include a weak negative correlations between $PreparatoryPhase$ and $ContractDays$; and weak positive correlations between predictors and $Amount$.
 
-```{r}
-#| label: fig-cor
-#| fig-cap: Correlation matrix showing the relationships between numerical predictor variables and the outcome Amount variable
-#| echo: false
-#| eval: true
-#| warning: false
-#| message: false
+More information about data analysis and figures are displayed in @sec-data-visualization.
 
-# filter to numerical predictor variables
-numerical_data <- cleaned_data %>%
-  select(Amount, PreparatoryPhase, ContractDays)
-
-correlation_matrix <- cor(numerical_data, use = "complete.obs")
-
-# create correlation matrix
-ggcorrplot(correlation_matrix, lab = TRUE) + 
-  theme(
-    axis.text.x = element_text(size = 10),  # Adjust x-axis text size
-    axis.text.y = element_text(size = 10) # Adjust y-axis text size
-  )
-```
-More information about the data analysis can be found in @sec-result.
-
-
-\newpage
 
 # Model {#sec-mod}
 
@@ -328,14 +282,138 @@ The model takes several assumptions, including linear relationship between predi
 
 While the model presents some valuable observations of Microsoft’s federal procurement contracts, there are some model limitations including prior function selection, data quality, potential for endogeneity, generalizability, and unobserved variables. These limitations will be discussed more detailed in [@sec-discussion-model].
 
-
 # Results {#sec-result}
 
-## Data
+The results are summarized in @tbl-modelresults, including R², Log-Likelihood (Log.Lik.), Expected Log Pointwise Predictive Density (ELPD), Leave-One-Out Information Criterion (LOOIC), Watanabe-Akaike Information Criterion (WAIC), and Root Mean Square Error (RMSE).
 
-The boxplot @fig-box-1 shows the Contract Duration across various Contract Types. As we can see in @fig-box-1, Computer Services, and Consulting contracts tend to have longer durations. This suggests these contracts often involve more complex or ongoing services that require extended timelines. In contrast, License/Maintenance Fees and Software contracts show shorter durations, with tighter interquartile ranges and lower medians, indicating that these contracts are likely less complex and are typically limited to a defined period. 
+```{r}
+#| echo: false
+#| eval: true
+#| warning: false
+#| message: false
 
-The boxplot @fig-box-2 shows the Phase Duration for each Contract Type. @fig-box-2 highlights Consulting and Distributed Computing Environments have longer preparatory phases, with a higher median and a larger spread. This suggests these contracts require more time for negotiation, planning, or administrative procedures before the actual work begins. On the other hand, Computer Services and License/Maintenance Fees contracts exhibit shorter preparatory phases, as evidenced by the lower medians and narrower interquartile ranges in @fig-box-2. This suggests that these contracts are more straightforward and may require less preparation before implementation.
+bayesian_model <-
+  readRDS(file = here::here("models/bayesian_model.rds"))
+```
+
+```{r}
+#| label: tbl-modelresults
+#| echo: false
+#| eval: true
+#| tbl-cap: "Summary of explanatory models for predicting contract amounts."
+#| warning: false
+#| message: false
+
+# Generate the model summary
+
+bayesian_model_full <- readRDS(here::here("models/bayesian_model_full.rds"))
+bayesian_model <- readRDS(here::here("models/bayesian_model.rds"))
+
+model_list <- list("Bayesian Model_Full" = bayesian_model_full, "Bayesian Model" = bayesian_model)
+
+modelsummary(
+  model_list,
+  output = "kableExtra", 
+  coef_map = c("ContractType" = "ContractType", "Buyer" = "Buyer", 
+               "ContractDays" = "ContractDays", "PhaseDays" = "PhaseDays")
+) %>%
+  kable_styling(latex_options = c("striped", "scale_down"))
+```
+
+The table compares two Bayesian models: the full model, `Bayesian Model_Full`, which includes all predictors (e.g., $Contract$, $Buyer$, $ContractDays$, and $PhaseDays$); and a simplified model, `Bayesian Model`, that adjusts for reduced predictors' complexity (e.g., $ContractType$, $BuyerCleaned$, $ContractDays$, and $PhaseDays$). Coefficients represent the estimated effect of each predictor on the contract amount, with credible intervals reflecting uncertainty. The results highlight the influence of contract-specific and buyer-specific variables on procurement amounts.
+
+The Full Bayesian Model has an $R^2$ of 0.289, indicating that approximately 28.9% of the variance in the contract amount is explained by the model. In comparison, the Reduced Bayesian Model explains only 8.2% of the variance in the contract amount, suggesting that the inclusion of additional predictors (specific buyers and contract names) improves the model’s explanatory power. However, both models have very low adjusted $R^2$, which suggests that the model is not capturing much of the unexplained variance in the data.
+
+The Full Bayesian Model has a Log-Likelihood of $-15,351.795$ and an ELPD of $-15,519.3$, while the Reduced Model has a Log-Likelihood of $-15,398.022$ and an ELPD of $-15,444.8$. These values suggest that the Full Bayesian Model fits the data slightly better than the Reduced Model, as it produces higher Log-Likelihood and ELPD values.
+ 
+The Full Bayesian Model has a lower LOOIC ($31,038.7$) and WAIC ($30,992.3$) compared to the Reduced Model, indicating that the Full Bayesian Model is better at out-of-sample predictive performance. Lower values of LOOIC and WAIC are indicative of better model fit and predictive accuracy.
+
+The Full Bayesian Model has a lower RMSE ($2,714,467.04$) compared to the Reduced Model ($2,971,135.35$), indicating better predictive performance. The lower RMSE value suggests that the Full Bayesian Model is more accurate in predicting the total contract amount.
+
+More results about the Bayesian model can be found in @sec-model-details.
+
+\newpage
+
+# Discussion {#sec-discussion}
+
+## Contract Complexity and Cost
+The positive association between $ContractDays$ and contract amount suggests that longer contracts tend to be more expensive. This pattern likely reflects the increased scope, complexity, and resource demands of these agreements, which are particularly prominent in IT-related contracts. These contracts often require ongoing development, maintenance, and support, making them more costly over time. Understanding this relationship helps stakeholders anticipate the financial requirements of long-term contracts and make more informed decisions when negotiating the terms of such agreements.
+
+## Negotiation and Efficiency
+The negative association between $PhaseDays$ and contract amount suggests that longer planning and negotiation periods may be associated with lower costs. This could be attributed to more thorough upfront planning, strategic negotiation, and budget management, which might lead to better cost control. For procurement agencies, this finding highlights the potential for improving procurement efficiency by streamlining the preparation phase. It also emphasizes the importance of early planning in securing cost-effective contracts, which can ultimately benefit both suppliers and government departments.
+
+## Sector-Specific Effects 
+The significant variation in contract amounts across different contract types (e.g., Consulting, Software) and buyers (e.g., National Defence, Employment and Social Development Canada) underscores the importance of sector-specific factors in federal procurement dynamics. Departments with higher budgets or those managing critical projects, such as National Defence, tend to award larger contracts. This observation suggests that the size and nature of the buyer's mandate play a substantial role in shaping procurement patterns. It also indicates that procurement decisions are not solely based on market competitiveness but are influenced by the strategic priorities of the departments involved.
+
+## Model Performance and Limitations {#sec-discussion-model}
+
+The Bayesian model used in this study has low adjusted $R^2$ values, indicating that it explains only a small portion of the variance in contract amounts (28.9%). This suggests that other important predictors, not captured by the model, may be influencing contract outcomes. The presence of missing or erroneous values in key variables like $ContractDays$ or $PhaseDays$ may introduce bias, further reducing the model's reliability.
+
+One notable limitation of the model is its inability to account for external factors that could significantly affect procurement decisions, such as political influences, departmental priorities, or budgetary constraints. These unobserved variables may introduce omitted variable bias, affecting the model's accuracy. Furthermore, the model assumes linear relationships between the independent variables and the dependent variable, which oversimplifies the complex nature of federal procurement. The categorization of contract types and buyers into broad groups also limits the model's ability to capture the full diversity of contracts awarded.
+
+Endogeneity is another issue that may affect the model's findings. There may be a bidirectional relationship between procurement amounts and buyer behavior—future procurement amounts could influence the allocation of future budgets, which in turn may impact future contracts awarded to Microsoft. This reciprocal relationship, if not properly addressed, can lead to biased coefficient estimates.
+
+## Weaknesses and Next Steps
+
+This paper provides a foundation for understanding federal procurement contracts awarded to Microsoft but also suggests several directions for future research. One potential extension of this study is to compare Microsoft's procurement trends with those of other major suppliers. By analyzing whether Microsoft's patterns are unique or consistent with broader trends across industries, researchers could better assess whether the observed dynamics are systemic within federal procurement practices.
+
+Additionally, the data quality issues identified—such as incomplete or inconsistent contract dates—highlight the need for improved data reporting standards. These inconsistencies could be addressed through collaboration with government agencies to ensure that future procurement datasets are more accurate and reliable. This would enhance the validity of future analyses and make procurement data more actionable for both policymakers and industry stakeholders.
+
+Finally, exploring more complex models, such as non-linear regression or machine learning approaches, could provide deeper insights into the factors influencing contract amounts. These methods may offer more flexibility in capturing non-linear relationships and uncovering hidden patterns within the data, improving the robustness and predictive power of the analysis.
+
+\newpage
+
+\appendix
+
+# Appendix {-}
+
+# Additional Data details {#sec-data-details}
+
+## Graphs {#sec-data-visualization}
+```{r}
+#| label: fig-contract
+#| fig-cap: The histogram shows the distribution of performance period, which demonstrates the days between start and end date.
+#| echo: false
+#| eval: true
+#| warning: false
+#| message: false
+
+# create plot for Distribution of Poll Scores by candidate
+ggplot(cleaned_data, aes(x = ContractDays)) +
+  geom_histogram(
+    bins = 15,
+    fill = "steelblue",
+    color = "black",
+    alpha = 0.7
+  ) +
+  labs(
+    x = "Contract Performance Phase (day)",
+    y = "Frequency"
+  ) +
+  theme_minimal()
+```
+
+```{r}
+#| label: fig-cor
+#| fig-cap: Correlation matrix showing the relationships between numerical predictor variables and the outcome Amount variable
+#| echo: false
+#| eval: true
+#| warning: false
+#| message: false
+
+# filter to numerical predictor variables
+numerical_data <- cleaned_data %>%
+  select(Amount, PreparatoryPhase, ContractDays)
+
+correlation_matrix <- cor(numerical_data, use = "complete.obs")
+
+# create correlation matrix
+ggcorrplot(correlation_matrix, lab = TRUE) + 
+  theme(
+    axis.text.x = element_text(size = 10),  # Adjust x-axis text size
+    axis.text.y = element_text(size = 10) # Adjust y-axis text size
+  )
+```
 
 ```{r}
 #| label: fig-box
@@ -366,6 +444,14 @@ ggplot(data, aes(x = ContractType, y = PhaseDays)) +
   labs(x = "Contract Type", y = "Phase Duration") +
   theme(axis.text.x = element_text(size = 6))
 ```
+
+\newpage
+
+## Data Visualization Analysis
+
+The boxplot @fig-box-1 shows the Contract Duration across various Contract Types. As we can see in @fig-box-1, Computer Services, and Consulting contracts tend to have longer durations. This suggests these contracts often involve more complex or ongoing services that require extended timelines. In contrast, License/Maintenance Fees and Software contracts show shorter durations, with tighter interquartile ranges and lower medians, indicating that these contracts are likely less complex and are typically limited to a defined period. 
+
+The boxplot @fig-box-2 shows the Phase Duration for each Contract Type. @fig-box-2 highlights Consulting and Distributed Computing Environments have longer preparatory phases, with a higher median and a larger spread. This suggests these contracts require more time for negotiation, planning, or administrative procedures before the actual work begins. On the other hand, Computer Services and License/Maintenance Fees contracts exhibit shorter preparatory phases, as evidenced by the lower medians and narrower interquartile ranges in @fig-box-2. This suggests that these contracts are more straightforward and may require less preparation before implementation.
 
 The heatmap @fig-date shows the distribution of federal procurement contracts awarded to Microsoft over four-month periods from 2020 to 2024. The frequency tends to drop in the September–December period, which suggests the budgetary constraints or the fiscal year-end.
 A noticeable decline occurs in 2024 because the data only updates until September. The darker shades during early and mid-year in @fig-date align with expected procurement trends, where departments allocate funds proactively before the fiscal year closes. Understanding this distribution provides critical insights into procurement planning and Microsoft's role during different periods.
@@ -449,93 +535,6 @@ ggplot(
     axis.text.y = element_text(size = 6),      # Adjust y-axis text size
   )
 ```
-
-\newpage
-
-## Model Summary
-
-The results are summarized in @tbl-modelresults, including R², Log-Likelihood (Log.Lik.), Expected Log Pointwise Predictive Density (ELPD), Leave-One-Out Information Criterion (LOOIC), Watanabe-Akaike Information Criterion (WAIC), and Root Mean Square Error (RMSE).
-
-```{r}
-#| echo: false
-#| eval: true
-#| warning: false
-#| message: false
-
-bayesian_model <-
-  readRDS(file = here::here("models/bayesian_model.rds"))
-```
-
-```{r}
-#| label: tbl-modelresults
-#| echo: false
-#| eval: true
-#| tbl-cap: "Summary of explanatory models for predicting contract amounts."
-#| warning: false
-#| message: false
-
-# Generate the model summary
-
-bayesian_model_full <- readRDS(here::here("models/bayesian_model_full.rds"))
-bayesian_model <- readRDS(here::here("models/bayesian_model.rds"))
-
-model_list <- list("Bayesian Model_Full" = bayesian_model_full, "Bayesian Model" = bayesian_model)
-
-modelsummary(
-  model_list,
-  output = "kableExtra", 
-  coef_map = c("ContractType" = "ContractType", "Buyer" = "Buyer", 
-               "ContractDays" = "ContractDays", "PhaseDays" = "PhaseDays")
-) %>%
-  kable_styling(latex_options = c("striped", "scale_down"))
-```
-
-The table compares two Bayesian models: the full model, `Bayesian Model_Full`, which includes all predictors (e.g., $Contract$, $Buyer$, $ContractDays$, and $PhaseDays$); and a simplified model, `Bayesian Model`, that adjusts for reduced predictors' complexity (e.g., $ContractType$, $BuyerCleaned$, $ContractDays$, and $PhaseDays$). Coefficients represent the estimated effect of each predictor on the contract amount, with credible intervals reflecting uncertainty. The results highlight the influence of contract-specific and buyer-specific variables on procurement amounts.
-
-The Full Bayesian Model has an $R^2$ of 0.289, indicating that approximately 28.9% of the variance in the contract amount is explained by the model. In comparison, the Reduced Bayesian Model explains only 8.2% of the variance in the contract amount, suggesting that the inclusion of additional predictors (specific buyers and contract names) improves the model’s explanatory power. However, both models have very low adjusted $R^2$, which suggests that the model is not capturing much of the unexplained variance in the data.
-
-The Full Bayesian Model has a Log-Likelihood of $-15,351.795$ and an ELPD of $-15,519.3$, while the Reduced Model has a Log-Likelihood of $-15,398.022$ and an ELPD of $-15,444.8$. These values suggest that the Full Bayesian Model fits the data slightly better than the Reduced Model, as it produces higher Log-Likelihood and ELPD values.
- 
-The Full Bayesian Model has a lower LOOIC ($31,038.7$) and WAIC ($30,992.3$) compared to the Reduced Model, indicating that the Full Bayesian Model is better at out-of-sample predictive performance. Lower values of LOOIC and WAIC are indicative of better model fit and predictive accuracy.
-
-The Full Bayesian Model has a lower RMSE ($2,714,467.04$) compared to the Reduced Model ($2,971,135.35$), indicating better predictive performance. The lower RMSE value suggests that the Full Bayesian Model is more accurate in predicting the total contract amount.
-
-More results about the Bayesian model can be found in @sec-model-details.
-
-\newpage
-
-# Discussion {#sec-discussion}
-
-## Contract Complexity and Cost
-The positive association between $ContractDays$ and contract amount suggests that longer contracts are typically more expensive, reflecting the increased scope, complexity, and resource requirements of these agreements. This is particularly relevant for IT-related contracts, which often involve extensive development, maintenance, and support services.
-
-## Negotiation and Efficiency
-The negative association between $PhaseDays$ and contract amount indicates that longer preparatory phases may lead to reduced costs, potentially due to more thorough planning, negotiation, or budgetary constraints. This insight can inform government strategies for managing procurement timelines to achieve cost efficiency.
-
-## Sector-Specific Effects 
-The significant variation in contract amounts across different contract types (e.g., Consulting, Software) and $buyers$ (e.g., National Defence, Employment and Social Development Canada) underscores the importance of sector-specific factors in procurement dynamics. Departments with higher budgets or critical mandates, such as National Defence, tend to award larger contracts, highlighting their influence in shaping overall procurement trends.
-
-## Model Performance and Limitations {#sec-discussion-model}
-
-The Bayesian model has low adjusted $R^2$ values. This means the model explains only a small portion (28.9%) of the variance in contract amounts. This suggests that important predictors may be missing. Also, missing or erroneous values in variables like $ContractDays$ or $PhaseDays$ could introduce bias and reduce the reliability of the results. 
-  
-One limitation of the model is that it may fail to account for certain external factors or unobserved variables such as political factors, budgetary constraints, and departmental priorities. These external factors could lead to omitted variable bias, which also influence procurement decision.
-
-The model assumes a linear relationship between the independent variables and the dependent variable, which oversimplify the dynamics of federal procurement. The model categorizes contract types and buyers into broad groups, which also oversimplify the true diversity of contracts awarded. Future studies could explore non-linear models, such as splines or machine learning approaches, to capture more complex patterns.  
-
-There may be issues of endogeneity, where causality runs in both directions between some predictors and the outcome variable. The amount of procurement from a buyer may influence the allocation of future budgets to that department, which in turn affects future contract amounts awarded to Microsoft. This reciprocal relationship could introduce bias in the coefficient estimates if not properly addressed.
-
-## Weaknesses and Next Steps
-
-This paper provides a foundation for a deeper understanding of federal contract awards to Microsoft, but it also suggests several directions for future exploration. First, the study can expand to include comparisons with other major suppliers. By examining whether Microsoft's procurement trends are unique or reflective of broader patterns across industries. This gives a better understanding on assess whether certain dynamics are systemic within federal contracting practices.
-
-Data quality and consistency issues are also of concern. The anomalies identified in this study, such as incomplete or inconsistent contract dates, highlight the need for improved data reporting standards. These discrepancies can be addressed in collaboration with government agencies to improve the reliability of procurement datasets and ensure that future analyses are more reliable and actionable.
-
-\newpage
-
-\appendix
-
-# Appendix {-}
 
 # Additional Model details {#sec-model-details}
 

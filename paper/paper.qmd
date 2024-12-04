@@ -49,6 +49,7 @@ library(rstanarm)
 cleaned_data <- read_parquet(here::here("data/analysis_data/procurement_cleaned.parquet"))
 ```
 
+\newpage
 
 # Introduction
 
@@ -72,28 +73,28 @@ The data used in this analysis comes from publicly available procurement data [@
 
 ## Measurement
 
-The dataset used in this analysis originates from Canadian governments of all levels post solicitations for companies to search for business opportunities, as documented in @ProcurementIntro, then collects data from each of these platforms and unifies into standard format.
+The dataset used in this analysis originates from Canadian governments of all levels post solicitations for companies to search for business opportunities, as documented in @ProcurementIntro. The data from these various platforms is then standardized to form a unified dataset for analysis.
 
-The measurement process delegates contracts routed through Public Service and Procurement Canada (PSPC), and blanket disclosures organized by Treasury Board of Canada Secretariat (TBS) to understand the federal procurement. The methodologies of federal solicitations are either competitive or non-competitive. Competitive contracts accept bids from all or some subset of suppliers. Non-competitive contracts do not, citing certain exceptions, including a “pressing emergency in which delay would be injurious to the public interest,” or when the estimated cost to the buyer is below certain thresholds defined for some goods and services.
+The measurement process delegates contracts routed through Public Service and Procurement Canada (PSPC), and blanket disclosures organized by Treasury Board of Canada Secretariat (TBS) to understand the federal procurement. The methodologies of federal solicitations are either competitive or non-competitive. Competitive contracts allow bids from all or a subset of suppliers, while non-competitive contracts are awarded without open bidding. Exceptions for non-competitive contracts include situations where delays could harm the public interest or when the cost to the buyer falls below certain thresholds for specific goods or services.
 
-More information about solicitation method can be found in @sec-meth-details.
+More detailed information about solicitation methodology can be found in @sec-meth-details.
 
 
 ## Data Cleaning
 
-After imported the raw dataset using `read_csv` function, I first select specific columns to focus on relevant information towards this study by omitting redundant information, such as the contract link and same value of region. Then I rename key variables from raw data for clarity. The key variables of interest in this analysis include $Contract$, $StartDate$, $AwardDate$, $EndDate$, $Buyer$, and $Amount$.
+After importing the raw dataset using `read_csv` function, I first select specific columns to focus on relevant information for this study by omitting redundant information, such as the contract link and the same value of region. Then I rename key variables from the raw data for clarity. The key variables of interest in this analysis include $Contract$, $StartDate$, $AwardDate$, $EndDate$, $Buyer$, and $Amount$.
 
-I standardize the date format of all date related datas for proper parsing by using `mdy()` function and change the dollar format of amount into numeric numbers for future calculation purposes. Due to the error with unknown reason that $EndDate$ is before $StartDate$ or $AwardDate$, those entries were excluded from this paper. 
+I standardize the date format of all date-related data for proper parsing by using `mdy()` function and change the dollar format of the amount into numeric numbers for future calculation purposes. Due to the error with the unknown reason that $EndDate$ is before $StartDate$ or $AwardDate$, those entries were excluded from this paper. 
 
-$PreparatoryPhase$, $PhaseDays$, and $ContractDays$ variables were created for the purpose of analyzing preparatory phase and performance phase corresponding to each contract. $PreparatoryPhase$ calculates the days from $AwardDate$ to $StartDate$. $ContractDays$ calculates the days from $StartDate$ to $EndDate$. $PhaseDays$ take the absolute value of $PreparatoryPhase$ because of the minor effect of either prepare before contract being awarded or prepare after contract being awarded. I also created new variables called $ContractType$ and $BuyerCleaned$, which categorizes the most common buyers and contracts based on keywords.
+$PreparatoryPhase$, $PhaseDays$, and $ContractDays$ variables were created to analyze the preparatory phase and performance phase corresponding to each contract. $PreparatoryPhase$ calculates the days from $AwardDate$ to $StartDate$. $ContractDays$ calculates the days from $StartDate$ to $EndDate$. $PhaseDays$ takes the absolute value of $PreparatoryPhase$ because of the minor effect of either preparing before the contract is awarded or preparing after the contract is awarded. I also created new variables called $ContractType$ and $BuyerCleaned$, which categorize the most common buyers and contracts based on keywords.
 
-This dataset contains only two entries for 2019 federal procurement contracts awarded to Microsoft. So, I filter out the contracts before 2020 to focus on the records between 2020 and September 2024 as desired. Also, I filtered missing data (NA) of $StartDate$, which only has one entry in this dataset. By summary the data set, I noticed a significant outlier with value of $102,260,150, which largely impact the outcome. So, I decide to drop this entry. Then I check the character type variables, $Supplier$ and $Contract$, using `table()` function for the purpose of manipulating input error. I standardize the supplier's name which combine the similar name due to capitalization or some notation differences, and format them with first letter of each word capitalized.
+This dataset contains only two entries for 2019 federal procurement contracts awarded to Microsoft. So, I filtered out the contracts before 2020 to focus on the records between 2020 and September 2024 as desired. Also, I filtered missing data (NA) of $StartDate$, which only has one entry in this dataset. By summary of the data set, I noticed a significant outlier with the value of $102,260,150, which largely impacted the outcome. So, I decided to drop this entry. Then I check the character type variables, $Supplier$ and $Contract$, using `table()` function to manipulate input error. I standardize the supplier's name which combines the similar name due to capitalization or some notation differences, and format them with the first letter of each word capitalized.
 
 After completing the cleaning, we saved the final dataset in both Parquet and CSV formats for later analysis.
 
 ## Outcome Variables
 
-The main outcome variable of interest is the amount of federal procurement contracts awarded to Microsoft. This variable is need to represent the financial magnitude of Microsoft with the federal government and measurement of evaluating procurement dynamics. [@fig-amount] is a histogram, which illustrates the annual total amounts of federal procurement contracts awarded to Microsoft from 2020 to 2024 (up to September). [@fig-amount] shows a generally increasing trend of total value of each year's contract. This may reflect the growing of technology in government operations, including software, cloud solutions, and IT infrastructure. The amount in 2023 doubles the amount in 2021, which suggests a heightened investment in federal procurement funding and large-scale projects. 
+The main outcome variable of interest is the amount of federal procurement contracts awarded to Microsoft. This variable is needed to represent the financial magnitude of Microsoft with the federal government and the measurement of evaluating procurement dynamics. [@fig-amount] is a histogram, which illustrates the annual total amounts of federal procurement contracts awarded to Microsoft from 2020 to 2024 (up to September). [@fig-amount] shows a generally increasing trend of the total value of each year's contract. This may reflect the growth of technology in government operations, including software, cloud solutions, and IT infrastructure. The amount in 2023 doubles the amount in 2021, which suggests a heightened investment in federal procurement funding and large-scale projects. 
 
 ```{r}
 #| label: fig-amount
@@ -173,7 +174,7 @@ summary_table %>%
 
 ```
 
-**Buyer** is a character-type variable representing the federal government department or agency who initiate and award the contract. [@tbl-buyer] shows the buyer who has over 25 contracts with Microsoft, which identifies key partners and understand the distribution of contracts across sectors. The table highlights that Employment and Social Development Canada (ESDC) and National Defence account over 50% of Microsoft's total awards.
+**Buyer** is a character-type variable representing the federal government department or agency that initiates and awards the contract. [@tbl-buyer] shows the buyer who has over 25 contracts with Microsoft, which identifies key partners and understands the distribution of contracts across sectors. The table highlights that Employment and Social Development Canada (ESDC) and National Defence account for over 50% of Microsoft's total awards.
 
 ```{r}
 #| label: tbl-buyer
@@ -208,7 +209,7 @@ summary_table %>%
 
 This dataset contains a series of date-type variables capturing key milestones in the procurement process. **Award Date** is the date when the contract was officially granted to Microsoft. **Start Date** is the date when the contracted services or goods provision begins. **End Date** is the date when the contract is completed or terminated. These variables are essential for analyzing procurement timelines and trends over the study period.
 
-**PhaseDays** is a numeric variable demonstrates the days between AwardDate and StartDate. In [@fig-preparatory], there is a high concentration around 0 indicates rapid procurement processes or emergency software services. [@fig-preparatory] also shows a few outlying contracts with a mobilization period of over one year. These long mobilization periods reflects issues such as delays in the procurement process, a long negotiation period, or administrative approvals.
+**PhaseDays** is a numeric variable that demonstrates the days between AwardDate and StartDate. In [@fig-preparatory], there is a high concentration of around 0 indicates rapid procurement processes or emergency software services. [@fig-preparatory] also shows a few outlying contracts with a mobilization period of over one year. These long mobilization periods reflect issues such as delays in the procurement process, a long negotiation period, or administrative approvals.
 
 ```{r}
 #| label: fig-preparatory
@@ -235,7 +236,7 @@ ggplot(cleaned_data, aes(x = PhaseDays)) +
 
 \newpage
 
-**ContractDays** is a numeric variable which is the days between $StartDate$ and $EndDate$. [@fig-contract] shows the distribution of performance period. The right skewed distribution in [@fig-contract] indicates that the majority of contract duration is within a year. There is an over 5 years performance period in [@fig-contract] implies a massive project that requires extensive preparation.
+**ContractDays** is a numeric variable which is the days between $StartDate$ and $EndDate$. [@fig-contract] shows the distribution of the performance period. The right-skewed distribution in [@fig-contract] indicates that the majority of contract duration is within a year. There is an over 5 years performance period in [@fig-contract] implies a massive project that requires extensive preparation.
 
 ```{r}
 #| label: fig-contract
@@ -332,9 +333,9 @@ While the model presents some valuable observations of Microsoft’s federal pro
 
 ## Data
 
-The boxplot @fig-box-1 shows the Contract Duration across various Contract Types. As we can see in @fig-box-1, Computer Services and Consulting contracts tend to have longer durations. This suggests these contracts often involve more complex or ongoing services that require extended timelines. In contrast, License/Maintenance Fees and Software contracts show shorter durations, with tighter interquartile ranges and lower medians, indicating that these contracts are likely less complex and are typically limited to a defined time period. 
+The boxplot @fig-box-1 shows the Contract Duration across various Contract Types. As we can see in @fig-box-1, Computer Services, and Consulting contracts tend to have longer durations. This suggests these contracts often involve more complex or ongoing services that require extended timelines. In contrast, License/Maintenance Fees and Software contracts show shorter durations, with tighter interquartile ranges and lower medians, indicating that these contracts are likely less complex and are typically limited to a defined period. 
 
-The boxplot @fig-box-2 shows the Phase Duration for each Contract Type. @fig-box-2 highlights Consulting and Distributed Computing Environment have longer preparatory phases, with a higher median and a larger spread. This suggests these contracts require more time for negotiation, planning, or administrative procedures before the actual work begins. On the other hand, Computer Services and License/Maintenance Fees contracts exhibit shorter preparatory phases, as evidenced by the lower medians and narrower interquartile ranges in @fig-box-2. This suggests that these contracts are more straightforward and may require less preparation before implementation.
+The boxplot @fig-box-2 shows the Phase Duration for each Contract Type. @fig-box-2 highlights Consulting and Distributed Computing Environments have longer preparatory phases, with a higher median and a larger spread. This suggests these contracts require more time for negotiation, planning, or administrative procedures before the actual work begins. On the other hand, Computer Services and License/Maintenance Fees contracts exhibit shorter preparatory phases, as evidenced by the lower medians and narrower interquartile ranges in @fig-box-2. This suggests that these contracts are more straightforward and may require less preparation before implementation.
 
 ```{r}
 #| label: fig-box
@@ -366,7 +367,7 @@ ggplot(data, aes(x = ContractType, y = PhaseDays)) +
   theme(axis.text.x = element_text(size = 6))
 ```
 
-The heatmap @fig-date shows the distribution of federal procurement contracts awarded to Microsoft over four-month periods from 2020 to 2024. The frequency tends to drop in the September–December period, it suggests the budgetary constraints or the fiscal year-end.
+The heatmap @fig-date shows the distribution of federal procurement contracts awarded to Microsoft over four-month periods from 2020 to 2024. The frequency tends to drop in the September–December period, which suggests the budgetary constraints or the fiscal year-end.
 A noticeable decline occurs in 2024 because the data only updates until September. The darker shades during early and mid-year in @fig-date align with expected procurement trends, where departments allocate funds proactively before the fiscal year closes. Understanding this distribution provides critical insights into procurement planning and Microsoft's role during different periods.
 
 ```{r}
@@ -401,9 +402,6 @@ ggplot(contract_counts, aes(x = Period, y = Year, fill = Count)) +
   theme_minimal()
 ```
 
-
-\newpage
-
 The scatter plot @fig-mobilization shows the relationship between the Award Date and the Start Date of federal procurement contracts awarded to Microsoft. Most points lie on the diagonal line indicating the numerous contracts commence immediately after being awarded. This is particularly common for time-sensitive contract types, such as License/Maintenance Fees Related. Contracts in 2020–2021 tend to exhibit a wider spread in start dates, possibly reflecting a slower procurement process during those years. More recent contracts in @fig-mobilization cluster closer to the diagonal, suggesting streamlined processes or more immediate implementation needs.
 
 ```{r}
@@ -422,11 +420,13 @@ ggplot(
   theme(
     legend.position = "right",
     legend.text = element_text(size = 6),      # Adjust legend label size
-    legend.title = element_text(size = 8)    # Adjust legend title size
+    legend.title = element_text(size = 8),     # Adjust legend title size
+    axis.text.x = element_text(size = 6),      # Adjust x-axis text size
+    axis.text.y = element_text(size = 6),      # Adjust y-axis text size
     )  # This removes the legend
 ```
 
-The scatter plot @fig-performance shows the diversity in contract durations across procurement categories. Most contracts ends within one year of their start dates, suggesting that most federal contracts are short-term. A smaller subset of contracts extends beyond three years, typically associated with large-scale projects or ongoing support agreements. @fig-performance also highlights that the most contract ends in the year of 2026. A few contracts with over 5 years stand out in 2021, suggesting that longer durations are prevalent in service-oriented categories.
+The scatter plot @fig-performance shows the diversity in contract durations across procurement categories. Most contracts end within one year of their start dates, suggesting that most federal contracts are short-term. A smaller subset of contracts extends beyond three years, typically associated with large-scale projects or ongoing support agreements. @fig-performance also highlights that most contract ends in the year 2026. A few contracts with over 5 years stand out in 2021, suggesting that longer durations are prevalent in service-oriented categories.
 
 ```{r}
 #| label: fig-performance
@@ -444,7 +444,9 @@ ggplot(
   theme(
     legend.position = "right",
     legend.text = element_text(size = 6),      # Adjust legend label size
-    legend.title = element_text(size = 8)      # Adjust legend title size
+    legend.title = element_text(size = 8),     # Adjust legend title size
+    axis.text.x = element_text(size = 6),      # Adjust x-axis text size
+    axis.text.y = element_text(size = 6),      # Adjust y-axis text size
   )
 ```
 
@@ -468,7 +470,7 @@ bayesian_model <-
 #| label: tbl-modelresults
 #| echo: false
 #| eval: true
-#| tbl-cap: "Explanatory models of contract amount based on ContractType, Buyer, ContractDays and PhaseDays"
+#| tbl-cap: "Summary of explanatory models for predicting contract amounts."
 #| warning: false
 #| message: false
 
@@ -488,6 +490,8 @@ modelsummary(
   kable_styling(latex_options = c("striped", "scale_down"))
 ```
 
+The table compares two Bayesian models: the full model, `Bayesian Model_Full`, which includes all predictors (e.g., $Contract$, $Buyer$, $ContractDays$, and $PhaseDays$); and a simplified model, `Bayesian Model`, that adjusts for reduced predictors' complexity (e.g., $ContractType$, $BuyerCleaned$, $ContractDays$, and $PhaseDays$). Coefficients represent the estimated effect of each predictor on the contract amount, with credible intervals reflecting uncertainty. The results highlight the influence of contract-specific and buyer-specific variables on procurement amounts.
+
 The Full Bayesian Model has an $R^2$ of 0.289, indicating that approximately 28.9% of the variance in the contract amount is explained by the model. In comparison, the Reduced Bayesian Model explains only 8.2% of the variance in the contract amount, suggesting that the inclusion of additional predictors (specific buyers and contract names) improves the model’s explanatory power. However, both models have very low adjusted $R^2$, which suggests that the model is not capturing much of the unexplained variance in the data.
 
 The Full Bayesian Model has a Log-Likelihood of $-15,351.795$ and an ELPD of $-15,519.3$, while the Reduced Model has a Log-Likelihood of $-15,398.022$ and an ELPD of $-15,444.8$. These values suggest that the Full Bayesian Model fits the data slightly better than the Reduced Model, as it produces higher Log-Likelihood and ELPD values.
@@ -495,6 +499,8 @@ The Full Bayesian Model has a Log-Likelihood of $-15,351.795$ and an ELPD of $-1
 The Full Bayesian Model has a lower LOOIC ($31,038.7$) and WAIC ($30,992.3$) compared to the Reduced Model, indicating that the Full Bayesian Model is better at out-of-sample predictive performance. Lower values of LOOIC and WAIC are indicative of better model fit and predictive accuracy.
 
 The Full Bayesian Model has a lower RMSE ($2,714,467.04$) compared to the Reduced Model ($2,971,135.35$), indicating better predictive performance. The lower RMSE value suggests that the Full Bayesian Model is more accurate in predicting the total contract amount.
+
+More results about the Bayesian model can be found in @sec-model-details.
 
 \newpage
 
@@ -518,11 +524,6 @@ One limitation of the model is that it may fail to account for certain external 
 The model assumes a linear relationship between the independent variables and the dependent variable, which oversimplify the dynamics of federal procurement. The model categorizes contract types and buyers into broad groups, which also oversimplify the true diversity of contracts awarded. Future studies could explore non-linear models, such as splines or machine learning approaches, to capture more complex patterns.  
 
 There may be issues of endogeneity, where causality runs in both directions between some predictors and the outcome variable. The amount of procurement from a buyer may influence the allocation of future budgets to that department, which in turn affects future contract amounts awarded to Microsoft. This reciprocal relationship could introduce bias in the coefficient estimates if not properly addressed.
-
-## Alternative Models Considered
-Linear regression model was evaluated in the paper. While the linear regression model was straightforward and interpretable, it lacked the flexibility to incorporate uncertainty in parameter estimates. The Bayesian regression model was chosen as a middle ground, balancing flexibility, interpretability, and the ability to quantify uncertainty. However, the limitations observed in model performance suggest that future work could benefit from integrating features of these alternative approaches.
-
-More results about these two models can be found in @sec-model-details.
 
 ## Weaknesses and Next Steps
 
@@ -708,39 +709,43 @@ modelsummary(
 
 # Methodology {#sec-meth-details}
 
-The methodology employed in this study involves analyzing federal procurement contracts awarded to Microsoft, leveraging data from two primary sources: Public Services and Procurement Canada (PSPC) and the Treasury Board of Canada Secretariat (TBS). These two datasets provide information on government procurement, but they come with distinct limitations and reporting structures [@ProcurementSources].
+The methodology employed in this study focuses on analyzing federal procurement contracts awarded to Microsoft. The dataset used in this analysis comes from various Canadian government platforms that post solicitations for business opportunities, enabling companies to bid on government contracts. This data is gathered from multiple government sources and consolidated into a unified format to ensure consistency and comprehensiveness.
+
+The analysis relies on two primary data sources: Public Services and Procurement Canada (PSPC) and the Treasury Board of Canada Secretariat (TBS). Each dataset provides unique insights into the federal procurement process, but they come with distinct limitations that must be considered when interpreting the results [@ProcurementSources].
 
 ## Data Sources and Structure
 
 Federal procurement data is categorized into two main streams:
 
-+ PSPC serves as the central procurement body for most federal government departments and is responsible for managing a significant portion of federal contracts. It maintains a public platform called CanadaBuys, where procurement information is published. However, due to migration from the older BuyAndSell platform and the incomplete nature of pre-2022 data, some variables, such as contract types and trade agreement information, are missing or inconsistently reported. The PSPC data is particularly useful for understanding contracts where the PSPC is the managing body, but only contracts above a certain dollar threshold are publicly available.
+### Public Services and Procurement Canada (PSPC)
 
-+ TBS consolidates procurement data from all government departments and requires proactive publication under the Access to Information Act. The TBS dataset is more comprehensive in terms of the number of contracts, but it suffers from inconsistencies and gaps in the reported fields. TBS publishes data quarterly, and records before 2017 should not be considered complete. Unlike PSPC, TBS data includes the full details of contract awards but does not incorporate tender or solicitation data.
+PSPC serves as the central procurement body for most federal government departments, overseeing a significant portion of federal contracts. It manages the CanadaBuys platform, where procurement information is publicly published. However, due to the migration from the older BuyAndSell platform and incomplete records prior to 2022, some contract details, such as contract types and trade agreement information, may be missing or inconsistently reported. The PSPC dataset is valuable for understanding the procurement contracts managed by PSPC, though it only includes contracts above a certain dollar threshold.
 
-## Data Integration and Challenges:
+### Treasury Board of Canada Secretariat (TBS)
 
-There is an overlap between TBS and PSPC data, such that many contracts reported by PSPC are also included in the TBS dataset. However, the two datasets do not always align perfectly. Contracts reported by TBS may contain different details from the PSPC records. 
+TBS consolidates procurement data from all government departments, requiring proactive publication under the Access to Information Act. Unlike PSPC, the TBS dataset covers a larger number of contracts, including those from various departments and ministries. However, some records in this dataset, especially those prior to 2017, should not be considered complete, and there are inconsistencies in the fields reported. The TBS data provides full details of contract awards but lacks tender or solicitation information, limiting its use for certain types of analysis.
 
-This mismatch is exacerbated by the lack of a consistent unique identifier that would allow for easy linking between the two datasets. While about 20% of PSPC awards have matching TBS records, many contracts do not, making it impossible to perfectly merge the two datasets.
+## Data Integration and Challenges
 
-To address this, both datasets were kept separate in [@ProcurementSources]. PSPC data was used primarily for its comprehensive tender information, while TBS data was relied upon for its broader coverage of contract awards, spanning more years and a greater volume of contracts.
+One of the key challenges of this study is the overlap between the PSPC and TBS datasets. Many contracts reported by PSPC are also present in the TBS dataset. However, these two datasets do not always match perfectly. Differences in contract details, such as award amounts, contract types, or buyer names, can make direct comparisons difficult.
 
-## Solicitation Methods and Contract Types:
+A significant issue is the lack of a consistent unique identifier across the two datasets, which would allow for easy linking of records. While approximately 20% of PSPC contracts have matching records in TBS, a large proportion do not, complicating the merging of the datasets. In this study, the two datasets were kept separate to preserve the integrity of each source. The PSPC data was used primarily for its comprehensive tender information, while the TBS dataset provided a broader scope of contracts, covering a longer time period and more contracts overall.
+
+## Solicitation Methods and Contract Types
 
 Federal procurement processes are governed by various solicitation methods, which determine how contracts are awarded. These methods are categorized into competitive and non-competitive processes. 
 
-Four competitive options:
+### Competitive Solicitation Methods
 
-+ Open bidding: Any supplier can bid in response to an online solicitation.
-+ Selective tendering: Only some prequalified suppliers can bid.
-+ Limited tendering: Deviation from requirements of the relevant trade agreements (see Trade Agreements), still allowing bids.
-+ Traditional: Many suppliers can bid but not in response to a public, online solicitation; for example, responding to an email sent to suppliers by the government.
+1. Open bidding: Any supplier can bid in response to an online solicitation.
+2. Selective tendering: Only some prequalified suppliers can bid.
+3. Limited tendering: Deviation from requirements of the relevant trade agreements (see Trade Agreements), still allowing bids.
+4. Traditional: Many suppliers can bid but not in response to a public, online solicitation; for example, responding to an email sent to suppliers by the government.
 
-Two non-competitive options:
+### Non-Competitive Solicitation Methods
 
-+ Advanced Contract Award Notice: Notice to suppliers that the buyer intends to award a contract to a pre-identified supplier, while accepting a Statement of Capabilities, not a bid, from challenging suppliers. 
-+ Non-competitive: Blanket category for all other non-competitive processes.
+1. Advanced Contract Award Notice: Notice to suppliers that the buyer intends to award a contract to a pre-identified supplier, while accepting a Statement of Capabilities, not a bid, from challenging suppliers. 
+2. Non-competitive: Blanket category for all other non-competitive processes.
 
 
 \newpage
